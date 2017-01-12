@@ -1,20 +1,21 @@
-import { Schema } from 'sukima';
 import { QueryBuilder } from 'knex';
 
+import { MetaData } from '../table';
 import { Query } from './base';
 
 export type InsertQueryProps<Model> = {
   model?: Partial<Model>;
 }
 
-export class InsertQuery<Model, Id extends keyof Model> extends Query<Model[Id], InsertQueryProps<Model>> {
+export class InsertQuery<
+  Model, Name extends string, Alias extends string, Id extends keyof Model,
+> extends Query<Model[Id], InsertQueryProps<Model>, Model, Name, Alias, Id> {
 
   constructor(
-    tableName: string,
-    model: Partial<Model>,
-    idSchema: Schema<Model[Id]>,
+    tableMeta: MetaData<Model, Name, Alias, Id>,
+    model?: Partial<Model>,
   ) {
-    super(tableName, idSchema, { model });
+    super(tableMeta, { model }, tableMeta.schema.getPropertySchema(tableMeta.idAttribute));
   }
 
   value(model: Partial<Model>) {

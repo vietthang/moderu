@@ -1,17 +1,20 @@
 import { integer } from 'sukima';
 import { QueryBuilder } from 'knex';
 
+import { MetaData } from '../table';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
 import { makeRaw } from './utils';
 
-export class DeleteQuery extends ConditionalQuery<number, ConditionalQueryProps> {
+export class DeleteQuery<
+  Model, Name extends string, Alias extends string, Id extends keyof Model,
+> extends ConditionalQuery<number, ConditionalQueryProps, Model, Name, Alias, Id> {
 
   private static schema = integer().minimum(0);
 
   constructor(
-    tableName: string,
+    tableMeta: MetaData<Model, Name, Alias, Id>,
   ) {
-    super(tableName, DeleteQuery.schema, {});
+    super(tableMeta, {}, DeleteQuery.schema);
   }
 
   protected transformQuery(qb: QueryBuilder): QueryBuilder {

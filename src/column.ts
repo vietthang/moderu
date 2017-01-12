@@ -1,4 +1,4 @@
-import { Schema, number, integer, any } from 'sukima';
+import { Schema, number, integer } from 'sukima';
 
 import { Condition } from './condition';
 
@@ -23,44 +23,43 @@ export type AggregateFunction = 'sum' | 'avg' | 'min' | 'max' | 'count';
 export class Column<Value, Field extends string> {
 
   constructor(
-    public readonly field: string | AnyColumn,
-    public readonly alias: Field,
+    public readonly expression: string,
+    public readonly bindings: any[],
     public readonly schema: Schema<Value>,
-    public readonly isDistinct: boolean = false,
-    public readonly aggregateFunction?: AggregateFunction,
+    public readonly alias: Field,
   ) {
 
   }
 
-  getAlias(): string {
-    return '';
-  }
-
   distinct() {
     return new Column<Value, Field>(
-      this.field,
-      this.alias,
+      `DISTINCT(${this.expression})`,
+      this.bindings,
       this.schema,
-      this.isDistinct,
-      this.aggregateFunction,
-    )
+      this.alias,
+    );
   }
 
   as<Field2 extends string>(alias: Field2) {
     return new Column<Value, Field2>(
-      this.field,
-      alias,
+      this.expression,
+      this.bindings,
       this.schema,
-      this.isDistinct,
-      this.aggregateFunction,
+      alias,
     );
   }
 
   is(operator: string, target: any | Column<any, string>): any {
     if (target instanceof Column) {
-      return new Condition(`?? ${operator} ??`, [this, target]);
+      return new Condition(
+        `${this.expression} ${operator} ${this.expression}`,
+        [...this.bindings, ...target.bindings]
+      );
     } else {
-      return new Condition(`?? ${operator} ?`, [this, target]);
+      return new Condition(
+        `${this.expression} ${operator} ?`,
+        [...this.bindings, target]
+      );
     }
   }
 
@@ -113,54 +112,64 @@ export class Column<Value, Field extends string> {
   }
 
   isNull() {
-    return new Condition('?? IS NULL', [this]);
+    return new Condition(`${this.expression} IS NULL`, this.bindings);
   }
 
   isNotNull() {
-    return new Condition('?? IS NOT NULL', [this]);
+    return new Condition(`${this.expression} IS NOT NULL`, this.bindings);
   }
 
   withSchema<T>(schema: Schema<T>) {
     return new Column<T, Field>(
-      this.field,
-      this.alias,
+      this.expression,
+      this.bindings,
       schema,
-      this.isDistinct,
-      this.aggregateFunction,
+      this.alias,
     );
   }
 
   sum() {
-    return this.aggregate<'sum'>('sum').withSchema(sumSchema);
+    return new Column<number, 'sum'>(
+      `SUM(${this.expression})`,
+      this.bindings,
+      sumSchema,
+      'sum',
+    );
   }
 
   avg() {
-    return this.aggregate<'avg'>('avg').withSchema(avgSchema);
+    return new Column<number, 'avg'>(
+      `AVG(${this.expression})`,
+      this.bindings,
+      avgSchema,
+      'avg',
+    );
   }
 
   min() {
-    return this.aggregate<'min'>('min').withSchema(minSchema);
+    return new Column<number, 'min'>(
+      `MIN(${this.expression})`,
+      this.bindings,
+      minSchema,
+      'min',
+    );
   }
 
   max() {
-    return this.aggregate<'max'>('max').withSchema(maxSchema);
+    return new Column<number, 'max'>(
+      `MAX(${this.expression})`,
+      this.bindings,
+      maxSchema,
+      'max',
+    );
   }
 
   count() {
-    return this.aggregate<'count'>('count').withSchema(countSchema);
-  }
-
-  expression(expression: string, bindings: any[] = []) {
-    // return this.
-  }
-
-  private aggregate<Operator extends AggregateFunction>(operator: Operator) {
-    return new Column<any, Operator>(
-      this,
-      operator,
-      any(),
-      this.isDistinct,
-      operator,
+    return new Column<number, 'count'>(
+      `COUNT(${this.expression})`,
+      this.bindings,
+      countSchema,
+      'count',
     );
   }
 

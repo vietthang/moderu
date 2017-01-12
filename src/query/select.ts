@@ -1,10 +1,10 @@
-import { Schema } from 'sukima';
+import { array } from 'sukima';
 import { QueryBuilder, JoinClause } from 'knex';
 
 import { makeRaw } from './utils';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
 import { Column, AnyColumn } from '../column';
-import { Table } from '../table';
+import { Table, MetaData } from '../table';
 import { Condition } from '../condition';
 
 export type SelectOrderByDirection = 'asc' | 'desc';
@@ -20,7 +20,7 @@ export type SelectJoin = {
   on: Condition;
 }
 
-export type SelectProps = ConditionalQueryProps & {
+export type SelectQueryProps = ConditionalQueryProps & {
   columns?: Column<any, string>[];
   orderBys?: SelectOrderBy[];
   groupBys?: Column<any, string>[];
@@ -30,24 +30,27 @@ export type SelectProps = ConditionalQueryProps & {
   offset?: number;
 }
 
-export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectProps> {
+export type KeyValue<Value, Key extends string> = {
+  [K in Key]: Value
+}
+
+export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryProps, Model, string, string, any> {
 
   constructor(
-    tableName: string,
-    schema: Schema<Model[]>,
+    tableMeta: MetaData<Model, string, string, any>,
   ) {
-    super(tableName, schema, {});
+    super(tableMeta, {}, array().items(tableMeta.schema));
   }
 
-  join<Model2, TableName2 extends string, Id2 extends keyof Model2, Value>(
-    table2: Table<Model2, TableName2, Id2>,
+  join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2, Value>(
+    table2: Table<Model2, TableName2, Alias2, Id2>,
     sourceColumn: Column<Value, string>,
     targetColumn: Column<Value, string>,
   ) {
     return this.extend({
       joins: (this.props.joins || []).concat({
-        table: table2.$name,
-        alias: table2.$alias,
+        table: table2.$meta.name,
+        alias: table2.$meta.alias,
         on: sourceColumn.is('=', targetColumn),
       }),
     });
@@ -73,6 +76,156 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectProps> {
     return this.extend({ offset });
   }
 
+  columns(column: '*'): SelectQuery<Model>;
+
+  columns<Mapping>(mapping: { [P in keyof Mapping]: Column<Mapping[P], P> }): SelectQuery<Mapping>;
+
+  columns<
+    Value0, Key0 extends string
+  >(
+    column0: Column<Value0, Key0>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+  >;
+
+  columns<
+    Value0, Key0 extends string,
+    Value1, Key1 extends string
+  >(
+    column0: Column<Value0, Key0>,
+    column1: Column<Value1, Key1>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+    & KeyValue<Value1, Key1>
+  >;
+
+  columns<
+    Value0, Key0 extends string,
+    Value1, Key1 extends string,
+    Value2, Key2 extends string
+  >(
+    column0: Column<Value0, Key0>,
+    column1: Column<Value1, Key1>,
+    column2: Column<Value2, Key2>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+    & KeyValue<Value1, Key1>
+    & KeyValue<Value2, Key2>
+  >;
+
+  columns<
+    Value0, Key0 extends string,
+    Value1, Key1 extends string,
+    Value2, Key2 extends string,
+    Value3, Key3 extends string
+  >(
+    column0: Column<Value0, Key0>,
+    column1: Column<Value1, Key1>,
+    column2: Column<Value2, Key2>,
+    column3: Column<Value3, Key3>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+    & KeyValue<Value1, Key1>
+    & KeyValue<Value2, Key2>
+    & KeyValue<Value3, Key3>
+  >;
+
+  columns<
+    Value0, Key0 extends string,
+    Value1, Key1 extends string,
+    Value2, Key2 extends string,
+    Value3, Key3 extends string,
+    Value4, Key4 extends string
+  >(
+    column0: Column<Value0, Key0>,
+    column1: Column<Value1, Key1>,
+    column2: Column<Value2, Key2>,
+    column3: Column<Value3, Key3>,
+    column4: Column<Value4, Key4>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+    & KeyValue<Value1, Key1>
+    & KeyValue<Value2, Key2>
+    & KeyValue<Value3, Key3>
+    & KeyValue<Value4, Key4>
+  >;
+
+  columns<
+    Value0, Key0 extends string,
+    Value1, Key1 extends string,
+    Value2, Key2 extends string,
+    Value3, Key3 extends string,
+    Value4, Key4 extends string,
+    Value5, Key5 extends string
+  >(
+    column0: Column<Value0, Key0>,
+    column1: Column<Value1, Key1>,
+    column2: Column<Value2, Key2>,
+    column3: Column<Value3, Key3>,
+    column4: Column<Value4, Key4>,
+    column5: Column<Value5, Key5>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+    & KeyValue<Value1, Key1>
+    & KeyValue<Value2, Key2>
+    & KeyValue<Value3, Key3>
+    & KeyValue<Value4, Key4>
+    & KeyValue<Value5, Key5>
+  >;
+
+  columns<
+    Value0, Key0 extends string,
+    Value1, Key1 extends string,
+    Value2, Key2 extends string,
+    Value3, Key3 extends string,
+    Value4, Key4 extends string,
+    Value5, Key5 extends string,
+    Value6, Key6 extends string
+  >(
+    column0: Column<Value0, Key0>,
+    column1: Column<Value1, Key1>,
+    column2: Column<Value2, Key2>,
+    column3: Column<Value3, Key3>,
+    column4: Column<Value4, Key4>,
+    column5: Column<Value5, Key5>,
+    column6: Column<Value6, Key6>,
+  ): SelectQuery<
+    & KeyValue<Value0, Key0>
+    & KeyValue<Value1, Key1>
+    & KeyValue<Value2, Key2>
+    & KeyValue<Value3, Key3>
+    & KeyValue<Value4, Key4>
+    & KeyValue<Value5, Key5>
+    & KeyValue<Value6, Key6>
+  >;
+
+  columns(...columns: any[]): SelectQuery<any> {
+    if (columns.length === 1) {
+      const column = columns[0];
+      if (column === '*') {
+        return this.extend({
+          columns: [],
+        });
+      } else if (!(column instanceof Column)) {
+        return this.extend({
+          columns: Object
+            .keys(column)
+            .map(key => column[key].as(key)),
+        });
+      }
+    }
+
+    columns.forEach(column => {
+      if (!(column instanceof Column)) {
+        throw new Error('Input argument is not Column object');
+      }
+    })
+
+    return this.extend({
+      columns,
+    });
+  }
+
   protected transformQuery(qb: QueryBuilder): QueryBuilder {
     const {
       columns,
@@ -88,7 +241,11 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectProps> {
     if (!columns) {
       qb = qb.select('*');
     } else {
-      qb = qb.select(...columns.map(column => column.getAlias()));
+      qb = columns.reduce(
+        (qb, column) => qb.select(
+          makeRaw(qb, `${column.expression} AS ??`, [...column.bindings, column.alias])),
+        qb,
+      );
     }
 
     if (limit !== undefined) {
@@ -101,14 +258,14 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectProps> {
 
     if (orderBys !== undefined && orderBys.length > 0) {
       qb = orderBys.reduce(
-       (qb, { column, direction }) => qb.orderBy(column.getAlias(), direction),
+       (qb, { column, direction }) => qb.orderByRaw(makeRaw(qb, `${column.expression} ${direction}`, column.bindings)),
        qb,
       );
     }
 
     if (groupBys !== undefined && groupBys.length > 0) {
       qb = groupBys.reduce(
-       (qb, column) => qb.groupBy(column.getAlias()),
+       (qb, column) => qb.groupBy(makeRaw(qb, column.expression, column.bindings)),
        qb,
       );
     }
