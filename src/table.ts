@@ -2,22 +2,24 @@ import { Schema } from 'sukima';
 
 import { Column } from './column';
 
-export type DataSet<Model, Name extends string> = {
+export interface MetaData<Model, Name extends string, Alias extends string, Id extends keyof Model> {
+
+  readonly schema: Schema<Model>;
+
+  readonly name: Name;
+
+  readonly idAttribute: Id;
+
+  readonly alias: Alias;
+
+}
+
+export type Table<Model, Name extends string, Alias extends string, Id extends keyof Model> = {
 
   readonly [P in keyof Model]: Column<Model[P], P>;
 
 } & {
 
-  readonly $name: Name;
-
-  readonly $schema: Schema<Model>;
-
-  readonly $alias: string;
-
-};
-
-export type Table<Model, TableName extends string, Id extends keyof Model> = DataSet<Model, TableName> & {
-
-  readonly $idAttribute: Id;
+  readonly $meta: MetaData<Model, Name, Alias, Id>;
 
 }
