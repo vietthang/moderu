@@ -1,0 +1,39 @@
+{
+  "name": "moderu",
+  "version": "0.0.4",
+  "description": "Type-safe library for knex query & model.",
+  "main": "build/src/index.js",
+  "scripts": {
+    "compile": "tsc",
+    "bundle": "dts-bundle --name moderu --main build/src/index.d.ts",
+    "test": "npm run compile && mocha build/test/**/*.spec.js",
+    "build": "npm run compile && npm run bundle",
+    "clean": "rm -rf build",
+    "prepublish": "npm run clean && npm run build"
+  },
+  "homepage": "https://github.com/vietthang/moderu",
+  "author": "Yoshi",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/lodash": "^4.14.48",
+    "@types/mocha": "^2.2.32",
+    "@types/node": "0.0.3",
+    "@types/ramda": "0.0.2",
+    "chai": "^3.5.0",
+    "dts-bundle": "^0.6.1",
+    "mocha": "^3.1.2",
+    "source-map-support": "^0.4.6",
+    "tslint": "^3.15.1",
+    "tslint-microsoft-contrib": "^2.0.13",
+    "typescript": "^2.1.4"
+  },
+  "dependencies": {
+    "@types/bluebird": "^3.0.36",
+    "ajv": "^4.10.0",
+    "lodash": "^4.17.4",
+    "ramda": "^0.23.0",
+    "sukima": "^0.4.2"
+  },
+  "typings": "build/src/moderu.d.ts"
+}
