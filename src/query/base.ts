@@ -22,13 +22,24 @@ export abstract class Query<
     return validate(this.schema, ret);
   }
 
+  toSQL(query: QueryInterface): any {
+    const qb = query.table(this.tableMeta.name);
+    return this.transformQuery(qb).toSQL();
+  }
+
   protected abstract transformQuery(qb: QueryBuilder): QueryBuilder;
 
-  protected extend(props: PropTypes): this {
+  protected extend<T>(props: PropTypes, schema?: Schema<T>): this {
     return Object.assign(
       Object.create(this.constructor.prototype),
       this,
-      { props },
+      {
+        props: {
+          ...this.props as any,
+          ...props as any,
+        },
+      },
+      schema ? { schema } : {},
     );
   }
 

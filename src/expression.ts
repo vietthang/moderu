@@ -23,6 +23,27 @@ export type AggregateFunction = 'sum' | 'avg' | 'min' | 'max' | 'count';
 
 export type Value<Type> = Type | Expression<Type, string>;
 
+function getExpression<Type>(value: Value<Type>) {
+  if (value instanceof Expression) {
+    return value.expression;
+  } else {
+    return '?';
+  }
+}
+
+function mergeBindings(bindings: any[], ...values: (Value<any> | Value<any>[])[]) {
+  return flatten(values).reduce(
+    (bindings, value) => {
+      if (value instanceof Expression) {
+        return bindings.concat(value.bindings);
+      } else {
+        return bindings.concat(value);
+      }
+    },
+    bindings,
+  );
+}
+
 export class Expression<OutputType, Field extends string> {
 
   constructor(
@@ -52,25 +73,9 @@ export class Expression<OutputType, Field extends string> {
     );
   }
 
-  is<Type>(operator: string, ...target: (Value<Type> | Value<Type>[])[]): Condition {
-    const values = flatten(target);
-
-    const subExpressions = values.map(
-      value => value instanceof Expression ? value.expression : '?'
-    )
-
-    const expression = `${this.expression} ${operator} (${subExpressions.join(',')})`
-    const bindings = values.reduce(
-      (bindings, value) => {
-        if (value instanceof Expression) {
-          return bindings.concat(value.bindings)
-        } else {
-          return bindings.concat(value)
-        }
-      },
-      this.bindings,
-    );
-
+  is<Type>(operator: string, value: Value<Type>): Condition {
+    const expression = `${this.expression} ${operator} ${getExpression(value)}`;
+    const bindings = mergeBindings(this.bindings, value);
     return new Condition(expression, bindings);
   }
 
@@ -106,20 +111,28 @@ export class Expression<OutputType, Field extends string> {
     return this.is('NOT LIKE', target);
   }
 
-  between(lowerBound: number, upperBound: number) {
-    return this.is<number>('BETWEEN', [lowerBound, upperBound]);
+  between(lowerBound: Value<OutputType>, upperBound: Value<OutputType>) {
+    const expression = `${this.expression} BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
+    const bindings = mergeBindings(this.bindings, lowerBound, upperBound);
+    return new Condition(expression, bindings);
   }
 
   notBetween(lowerBound: number, upperBound: number) {
-    return this.is<number>('NOT BETWEEN', [lowerBound, upperBound]);
+    const expression = `${this.expression} NOT BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
+    const bindings = mergeBindings(this.bindings, lowerBound, upperBound);
+    return new Condition(expression, bindings);
   }
 
   in(values: Value<OutputType>[]) {
-    return this.is<OutputType>('IN', values);
+    const expression = `${this.expression} IN (${values.map(getExpression).join(',')})}`;
+    const bindings = mergeBindings(this.bindings, values);
+    return new Condition(expression, bindings);
   }
 
   notIn(values: Value<OutputType>[]) {
-    return this.is<OutputType>('NOT IN', values);
+    const expression = `${this.expression} NOT IN (${values.map(getExpression).join(',')})}`;
+    const bindings = mergeBindings(this.bindings, values);
+    return new Condition(expression, bindings);
   }
 
   isNull() {

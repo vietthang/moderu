@@ -14,7 +14,7 @@ export function insert<Model, Name extends string, Id extends keyof Model>(
 export function select<Model, Name extends string, Id extends keyof Model>(
   table: Table<Model, Name, Name, Id>,
 ) {
-  return new SelectQuery<Model>(table.$meta);
+  return new SelectQuery<{}>(table.$meta);
 }
 
 export function update<Model, Name extends string, Id extends keyof Model>(

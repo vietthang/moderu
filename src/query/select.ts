@@ -1,4 +1,5 @@
-import { array } from 'sukima';
+import { array, object } from 'sukima';
+import { ObjectSchema } from 'sukima/schemas/object';
 import { QueryBuilder, JoinClause } from 'knex';
 
 import { makeRaw } from './utils';
@@ -39,33 +40,57 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
   constructor(
     tableMeta: MetaData<Model, string, string, any>,
   ) {
-    super(tableMeta, {}, array().items(tableMeta.schema));
+    super(tableMeta, {}, array().items(object()));
   }
 
   join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2, Value>(
     table2: Table<Model2, TableName2, Alias2, Id2>,
     sourceColumn: Expression<Value, string>,
     targetColumn: Expression<Value, string>,
+  ): this;
+
+  join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2, Value>(
+    table2: Table<Model2, TableName2, Alias2, Id2>,
+    condition: Condition,
+  ): this;
+
+  join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2>(
+    table2: Table<Model2, TableName2, Alias2, Id2>,
+    ...args: any[],
   ) {
-    return this.extend({
-      joins: (this.props.joins || []).concat({
-        table: table2.$meta.name,
-        alias: table2.$meta.alias,
-        on: sourceColumn.is('=', targetColumn),
-      }),
-    });
+    if (args.length === 2) {
+      const expression0 = args[0];
+      const expression1 = args[1];
+      if (expression0 instanceof Expression && expression1 instanceof Expression) {
+        return this.join(table2, expression0.equals(expression1));
+      }
+    } else if (args.length === 1) {
+      const condition = args[0];
+      if (condition instanceof Condition) {
+        return this.extend({
+          joins: (this.props.joins || []).concat({
+            table: table2.$meta.name,
+            alias: table2.$meta.alias,
+            on: condition,
+          }),
+        });
+      }
+    }
+
+    throw new Error('Invalid argument(s).');
   }
 
   groupBy(...columns: AnyExpression[]) {
-    return this.extend({ groupBys: columns });
+    return this.extend({ groupBys: this.props.groupBys ? this.props.groupBys.concat(columns) : columns });
   }
 
   having(condition: Condition) {
-    return this.extend({ having: condition });
+    return this.extend({ having: this.props.having ? this.props.having.and(condition) : condition });
   }
 
   orderBy(column: AnyExpression, direction: 'asc' | 'desc' = 'asc') {
-    return this.extend({ orderBys: [{ column, direction }] });
+    const orderBy = { column, direction };
+    return this.extend({ orderBys: this.props.orderBys ? this.props.orderBys.concat(orderBy) : [orderBy] });
   }
 
   limit(limit: number): this {
@@ -76,15 +101,12 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     return this.extend({ offset });
   }
 
-  columns(column: '*'): SelectQuery<Model>;
-
-  columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], P> }): SelectQuery<Mapping>;
-
   columns<
     Value0, Key0 extends string
   >(
     column0: Expression<Value0, Key0>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
   >;
 
@@ -95,6 +117,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
   >;
@@ -108,6 +131,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     column1: Expression<Value1, Key1>,
     column2: Expression<Value2, Key2>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
     & KeyValue<Value2, Key2>
@@ -124,6 +148,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     column2: Expression<Value2, Key2>,
     column3: Expression<Value3, Key3>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
     & KeyValue<Value2, Key2>
@@ -143,6 +168,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     column3: Expression<Value3, Key3>,
     column4: Expression<Value4, Key4>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
     & KeyValue<Value2, Key2>
@@ -165,6 +191,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     column4: Expression<Value4, Key4>,
     column5: Expression<Value5, Key5>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
     & KeyValue<Value2, Key2>
@@ -190,6 +217,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     column5: Expression<Value5, Key5>,
     column6: Expression<Value6, Key6>,
   ): SelectQuery<
+    & Model
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
     & KeyValue<Value2, Key2>
@@ -199,31 +227,48 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     & KeyValue<Value6, Key6>
   >;
 
+  columns<Model2>(table: Table<Model2, string, string, any>): SelectQuery<Model & Model2>;
+
+  columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], P> }): SelectQuery<Model & Mapping>;
+
+  columns(...columns: Expression<any, string>[]): SelectQuery<any>;
+
   columns(...columns: any[]): SelectQuery<any> {
     if (columns.length === 1) {
       const column = columns[0];
-      if (column === '*') {
-        return this.extend({
-          columns: [],
-        });
+      if (column.$meta) {
+        return this.columns(
+          ...Object
+            .keys(column.$meta.schema.schema.properties)
+            .map(key => column[key])
+        );
       } else if (!(column instanceof Expression)) {
-        return this.extend({
-          columns: Object
+        return this.columns(
+          ...Object
             .keys(column)
-            .map(key => column[key].as(key)),
-        });
+            .map(key => column[key].as(key))
+        );
       }
     }
 
-    columns.forEach(column => {
-      if (!(column instanceof Expression)) {
-        throw new Error('Input argument is not Column object');
-      }
-    })
+    const newColumns = this.props.columns ? this.props.columns.concat(columns) : columns;
 
-    return this.extend({
-      columns,
-    });
+    return this
+      .extend(
+        { columns: newColumns },
+        array().items(
+          newColumns.reduce(
+            (schema: ObjectSchema<any>, column) => {
+              if (!(column instanceof Expression)) {
+                throw new Error('Input argument is not Column object.');
+              }
+
+              return schema.addProperty(column.alias, column.schema);
+            },
+            object().additionalProperties(false) as ObjectSchema<any>,
+          ),
+        ),
+      );
   }
 
   protected transformQuery(qb: QueryBuilder): QueryBuilder {
@@ -238,8 +283,8 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
       offset,
     } = this.props;
 
-    if (!columns) {
-      qb = qb.select('*');
+    if (!columns || columns.length === 0) {
+      throw new Error('No columns to query.');
     } else {
       qb = columns.reduce(
         (qb, column) => qb.select(
