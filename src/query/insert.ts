@@ -13,9 +13,8 @@ export class InsertQuery<
 
   constructor(
     tableMeta: MetaData<Model, Name, Alias, Id>,
-    model?: Partial<Model>,
   ) {
-    super(tableMeta, { model }, tableMeta.schema.getPropertySchema(tableMeta.idAttribute));
+    super(tableMeta, { }, tableMeta.schema.getPropertySchema(tableMeta.idAttribute));
   }
 
   value(model: Partial<Model>) {
