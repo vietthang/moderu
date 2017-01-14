@@ -1,4 +1,5 @@
 import { Schema, number, integer } from 'sukima';
+import flatten = require('lodash/flatten');
 
 import { Condition } from './condition';
 
@@ -20,19 +21,21 @@ export type ConditionOperator =
 
 export type AggregateFunction = 'sum' | 'avg' | 'min' | 'max' | 'count';
 
-export class Column<Value, Field extends string> {
+export type Value<Type> = Type | Expression<Type, string>;
+
+export class Expression<OutputType, Field extends string> {
 
   constructor(
     public readonly expression: string,
     public readonly bindings: any[],
-    public readonly schema: Schema<Value>,
+    public readonly schema: Schema<OutputType>,
     public readonly alias: Field,
   ) {
 
   }
 
   distinct() {
-    return new Column<Value, Field>(
+    return new Expression<OutputType, Field>(
       `DISTINCT(${this.expression})`,
       this.bindings,
       this.schema,
@@ -41,7 +44,7 @@ export class Column<Value, Field extends string> {
   }
 
   as<Field2 extends string>(alias: Field2) {
-    return new Column<Value, Field2>(
+    return new Expression<OutputType, Field2>(
       this.expression,
       this.bindings,
       this.schema,
@@ -49,66 +52,74 @@ export class Column<Value, Field extends string> {
     );
   }
 
-  is(operator: string, target: any | Column<any, string>): any {
-    if (target instanceof Column) {
-      return new Condition(
-        `${this.expression} ${operator} ${this.expression}`,
-        [...this.bindings, ...target.bindings]
-      );
-    } else {
-      return new Condition(
-        `${this.expression} ${operator} ?`,
-        [...this.bindings, target]
-      );
-    }
+  is<Type>(operator: string, ...target: (Value<Type> | Value<Type>[])[]): Condition {
+    const values = flatten(target);
+
+    const subExpressions = values.map(
+      value => value instanceof Expression ? value.expression : '?'
+    )
+
+    const expression = `${this.expression} ${operator} (${subExpressions.join(',')})`
+    const bindings = values.reduce(
+      (bindings, value) => {
+        if (value instanceof Expression) {
+          return bindings.concat(value.bindings)
+        } else {
+          return bindings.concat(value)
+        }
+      },
+      this.bindings,
+    );
+
+    return new Condition(expression, bindings);
   }
 
-  equals(target: Value | Column<Value, string>) {
+  equals(target: Value<OutputType>) {
     return this.is('=', target);
   }
 
-  notEquals(target: Value | Column<Value, string>) {
+  notEquals(target: Value<OutputType>) {
     return this.is('<>', target);
   }
 
-  greaterThan(target: Value | Column<Value, string>) {
+  greaterThan(target: Value<OutputType>) {
     return this.is('>', target);
   }
 
-  greaterThanEqual(target: Value | Column<Value, string>) {
+  greaterThanEqual(target: Value<OutputType>) {
     return this.is('>=', target);
   }
 
-  lessThan(target: Value | Column<Value, string>) {
+  lessThan(target: Value<OutputType>) {
     return this.is('<', target);
   }
 
-  lessThanEqual(target: Value | Column<Value, string>) {
+  lessThanEqual(target: Value<OutputType>) {
     return this.is('<=', target);
   }
 
-  like(target: string | Column<string, string>) {
+  like(target: Value<OutputType>) {
     return this.is('LIKE', target);
   }
 
-  notLike(target: string | Column<string, string>) {
+  notLike(target: Value<OutputType>) {
     return this.is('NOT LIKE', target);
   }
 
   between(lowerBound: number, upperBound: number) {
-    return this.is('BETWEEN', [lowerBound, upperBound]);
+    return this.is<number>('BETWEEN', [lowerBound, upperBound]);
   }
 
   notBetween(lowerBound: number, upperBound: number) {
-    return this.is('NOT BETWEEN', [lowerBound, upperBound]);
+    return this.is<number>('NOT BETWEEN', [lowerBound, upperBound]);
   }
 
-  in(target: Value[]) {
-    return this.is('IN', target);
+  in(values: Value<OutputType>[]) {
+    return this.is<OutputType>('IN', values);
   }
 
-  notIn(target: Value[]) {
-    return this.is('NOT IN', target);
+  notIn(values: Value<OutputType>[]) {
+    return this.is<OutputType>('NOT IN', values);
   }
 
   isNull() {
@@ -120,7 +131,7 @@ export class Column<Value, Field extends string> {
   }
 
   withSchema<T>(schema: Schema<T>) {
-    return new Column<T, Field>(
+    return new Expression<T, Field>(
       this.expression,
       this.bindings,
       schema,
@@ -129,7 +140,7 @@ export class Column<Value, Field extends string> {
   }
 
   sum() {
-    return new Column<number, 'sum'>(
+    return new Expression<number, 'sum'>(
       `SUM(${this.expression})`,
       this.bindings,
       sumSchema,
@@ -138,7 +149,7 @@ export class Column<Value, Field extends string> {
   }
 
   avg() {
-    return new Column<number, 'avg'>(
+    return new Expression<number, 'avg'>(
       `AVG(${this.expression})`,
       this.bindings,
       avgSchema,
@@ -147,7 +158,7 @@ export class Column<Value, Field extends string> {
   }
 
   min() {
-    return new Column<number, 'min'>(
+    return new Expression<number, 'min'>(
       `MIN(${this.expression})`,
       this.bindings,
       minSchema,
@@ -156,7 +167,7 @@ export class Column<Value, Field extends string> {
   }
 
   max() {
-    return new Column<number, 'max'>(
+    return new Expression<number, 'max'>(
       `MAX(${this.expression})`,
       this.bindings,
       maxSchema,
@@ -165,7 +176,7 @@ export class Column<Value, Field extends string> {
   }
 
   count() {
-    return new Column<number, 'count'>(
+    return new Expression<number, 'count'>(
       `COUNT(${this.expression})`,
       this.bindings,
       countSchema,
@@ -175,4 +186,4 @@ export class Column<Value, Field extends string> {
 
 }
 
-export type AnyColumn = Column<any, string>;
+export type AnyExpression = Expression<any, string>;

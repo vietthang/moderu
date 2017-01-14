@@ -3,14 +3,14 @@ import { QueryBuilder, JoinClause } from 'knex';
 
 import { makeRaw } from './utils';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
-import { Column, AnyColumn } from '../column';
+import { Expression, AnyExpression } from '../expression';
 import { Table, MetaData } from '../table';
 import { Condition } from '../condition';
 
 export type SelectOrderByDirection = 'asc' | 'desc';
 
 export type SelectOrderBy = {
-  column: Column<any, string>;
+  column: Expression<any, string>;
   direction: SelectOrderByDirection;
 };
 
@@ -21,9 +21,9 @@ export type SelectJoin = {
 }
 
 export type SelectQueryProps = ConditionalQueryProps & {
-  columns?: Column<any, string>[];
+  columns?: Expression<any, string>[];
   orderBys?: SelectOrderBy[];
-  groupBys?: Column<any, string>[];
+  groupBys?: Expression<any, string>[];
   having?: Condition;
   joins?: SelectJoin[];
   limit?: number;
@@ -44,8 +44,8 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
 
   join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2, Value>(
     table2: Table<Model2, TableName2, Alias2, Id2>,
-    sourceColumn: Column<Value, string>,
-    targetColumn: Column<Value, string>,
+    sourceColumn: Expression<Value, string>,
+    targetColumn: Expression<Value, string>,
   ) {
     return this.extend({
       joins: (this.props.joins || []).concat({
@@ -56,7 +56,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     });
   }
 
-  groupBy(...columns: AnyColumn[]) {
+  groupBy(...columns: AnyExpression[]) {
     return this.extend({ groupBys: columns });
   }
 
@@ -64,7 +64,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     return this.extend({ having: condition });
   }
 
-  orderBy(column: AnyColumn, direction: 'asc' | 'desc' = 'asc') {
+  orderBy(column: AnyExpression, direction: 'asc' | 'desc' = 'asc') {
     return this.extend({ orderBys: [{ column, direction }] });
   }
 
@@ -78,12 +78,12 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
 
   columns(column: '*'): SelectQuery<Model>;
 
-  columns<Mapping>(mapping: { [P in keyof Mapping]: Column<Mapping[P], P> }): SelectQuery<Mapping>;
+  columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], P> }): SelectQuery<Mapping>;
 
   columns<
     Value0, Key0 extends string
   >(
-    column0: Column<Value0, Key0>,
+    column0: Expression<Value0, Key0>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
   >;
@@ -92,8 +92,8 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     Value0, Key0 extends string,
     Value1, Key1 extends string
   >(
-    column0: Column<Value0, Key0>,
-    column1: Column<Value1, Key1>,
+    column0: Expression<Value0, Key0>,
+    column1: Expression<Value1, Key1>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
@@ -104,9 +104,9 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     Value1, Key1 extends string,
     Value2, Key2 extends string
   >(
-    column0: Column<Value0, Key0>,
-    column1: Column<Value1, Key1>,
-    column2: Column<Value2, Key2>,
+    column0: Expression<Value0, Key0>,
+    column1: Expression<Value1, Key1>,
+    column2: Expression<Value2, Key2>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
@@ -119,10 +119,10 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     Value2, Key2 extends string,
     Value3, Key3 extends string
   >(
-    column0: Column<Value0, Key0>,
-    column1: Column<Value1, Key1>,
-    column2: Column<Value2, Key2>,
-    column3: Column<Value3, Key3>,
+    column0: Expression<Value0, Key0>,
+    column1: Expression<Value1, Key1>,
+    column2: Expression<Value2, Key2>,
+    column3: Expression<Value3, Key3>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
@@ -137,11 +137,11 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     Value3, Key3 extends string,
     Value4, Key4 extends string
   >(
-    column0: Column<Value0, Key0>,
-    column1: Column<Value1, Key1>,
-    column2: Column<Value2, Key2>,
-    column3: Column<Value3, Key3>,
-    column4: Column<Value4, Key4>,
+    column0: Expression<Value0, Key0>,
+    column1: Expression<Value1, Key1>,
+    column2: Expression<Value2, Key2>,
+    column3: Expression<Value3, Key3>,
+    column4: Expression<Value4, Key4>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
@@ -158,12 +158,12 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     Value4, Key4 extends string,
     Value5, Key5 extends string
   >(
-    column0: Column<Value0, Key0>,
-    column1: Column<Value1, Key1>,
-    column2: Column<Value2, Key2>,
-    column3: Column<Value3, Key3>,
-    column4: Column<Value4, Key4>,
-    column5: Column<Value5, Key5>,
+    column0: Expression<Value0, Key0>,
+    column1: Expression<Value1, Key1>,
+    column2: Expression<Value2, Key2>,
+    column3: Expression<Value3, Key3>,
+    column4: Expression<Value4, Key4>,
+    column5: Expression<Value5, Key5>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
@@ -182,13 +182,13 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     Value5, Key5 extends string,
     Value6, Key6 extends string
   >(
-    column0: Column<Value0, Key0>,
-    column1: Column<Value1, Key1>,
-    column2: Column<Value2, Key2>,
-    column3: Column<Value3, Key3>,
-    column4: Column<Value4, Key4>,
-    column5: Column<Value5, Key5>,
-    column6: Column<Value6, Key6>,
+    column0: Expression<Value0, Key0>,
+    column1: Expression<Value1, Key1>,
+    column2: Expression<Value2, Key2>,
+    column3: Expression<Value3, Key3>,
+    column4: Expression<Value4, Key4>,
+    column5: Expression<Value5, Key5>,
+    column6: Expression<Value6, Key6>,
   ): SelectQuery<
     & KeyValue<Value0, Key0>
     & KeyValue<Value1, Key1>
@@ -206,7 +206,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
         return this.extend({
           columns: [],
         });
-      } else if (!(column instanceof Column)) {
+      } else if (!(column instanceof Expression)) {
         return this.extend({
           columns: Object
             .keys(column)
@@ -216,7 +216,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     }
 
     columns.forEach(column => {
-      if (!(column instanceof Column)) {
+      if (!(column instanceof Expression)) {
         throw new Error('Input argument is not Column object');
       }
     })

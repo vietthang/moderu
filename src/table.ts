@@ -1,11 +1,11 @@
 import { Schema } from 'sukima';
 import mapValues = require('lodash/mapValues');
 
-import { Column } from './column';
+import { Expression } from './expression';
 
-export class TableColumn<
+export class Column<
   Model, Name extends string, Alias extends string, Id extends keyof Model, Field extends keyof Model,
-> extends Column<Model[Field], Field> {
+> extends Expression<Model[Field], Field> {
 
   constructor(
     meta: MetaData<Model, Name, Alias, Id>,
@@ -30,7 +30,7 @@ export interface MetaData<Model, Name extends string, Alias extends string, Id e
 
 export type Table<Model, Name extends string, Alias extends string, Id extends keyof Model> = {
 
-  readonly [P in keyof Model]: TableColumn<Model, Name, Alias, Id, P>;
+  readonly [P in keyof Model]: Column<Model, Name, Alias, Id, P>;
 
 } & {
 
@@ -52,7 +52,7 @@ export function createTable<Model, Name extends string, Id extends keyof Model>(
 
   const { properties } = schema.schema;
   const columns = mapValues(properties, (jsonSchema, key: any) => {
-    return new TableColumn(meta, key);
+    return new Column(meta, key);
   });
 
   return {

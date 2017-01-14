@@ -1,12 +1,12 @@
 import { integer } from 'sukima';
 import { QueryBuilder } from 'knex';
 
-import { MetaData, TableColumn } from '../table';
-import { Column } from '../column';
+import { MetaData, Column } from '../table';
+import { Expression } from '../expression';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
 import { makeRaw } from './utils';
 
-export type UpdateModel<Model> = Partial<Model | { [K in keyof Model]: Column<Model[K], K> }>;
+export type UpdateModel<Model> = Partial<Model | { [K in keyof Model]: Expression<Model[K], K> }>;
 
 export type UpdateQueryProps<Model> = ConditionalQueryProps & {
   model?: UpdateModel<Model>;
@@ -27,8 +27,8 @@ export class UpdateQuery<
   set(model: UpdateModel<Model>): this;
 
   set<K extends keyof Model>(
-    column: K | TableColumn<Model, Name, Alias, Id, K>,
-    value: Model[K] | Column<Model[K], string>,
+    column: K | Column<Model, Name, Alias, Id, K>,
+    value: Model[K] | Expression<Model[K], string>,
   ): this;
 
   set(key: any, value?: any): this {
@@ -36,7 +36,7 @@ export class UpdateQuery<
       if (typeof key === 'string') {
         return this.set({ [key]: value } as any as UpdateModel<Model>);
       } else {
-        const column: TableColumn<Model, Name, Alias, Id, any> = key;
+        const column: Column<Model, Name, Alias, Id, any> = key;
 
         return this.set({ [column.alias]: value } as any as UpdateModel<Model>);
       }
