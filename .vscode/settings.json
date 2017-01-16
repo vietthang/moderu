@@ -1,4 +1,14 @@
 {
     "typescript.tsdk": "./node_modules/typescript/lib",
-    "eslint.enable": false
+    "eslint.enable": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "node_modules": true,
+        "build": true,
+        "coverage": true,
+        ".nyc_output": true
+    }
 }
