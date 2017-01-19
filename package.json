@@ -16,25 +16,25 @@
   "author": "Yoshi",
   "license": "MIT",
   "devDependencies": {
-    "@types/bluebird": "^3.0.36",
+    "@types/bluebird": "^3.0.37",
     "@types/chai": "^3.4.34",
-    "@types/lodash": "^4.14.48",
-    "@types/mocha": "^2.2.32",
-    "@types/node": "0.0.3",
+    "@types/mocha": "^2.2.37",
+    "@types/node": "7.0.0",
     "chai": "^3.5.0",
     "dts-bundle": "^0.6.1",
     "istanbul": "^0.4.5",
-    "mocha": "^3.1.2",
+    "knex": "^0.12.6",
+    "mocha": "^3.2.0",
+    "mysql": "^2.12.0",
     "nyc": "^10.0.0",
-    "source-map-support": "^0.4.8",
+    "source-map-support": "^0.4.9",
     "ts-node": "^2.0.0",
-    "tslint": "^3.15.1",
-    "tslint-microsoft-contrib": "^2.0.13",
-    "typescript": "^2.1.4"
+    "tslint": "^4.3.1",
+    "tslint-microsoft-contrib": "^4.0.0",
+    "typescript": "^2.1.5"
   },
   "dependencies": {
-    "lodash": "^4.17.4",
-    "sukima": "^0.4.2"
+    "sukima": "^0.5.1"
   },
   "nyc": {
     "include": [
