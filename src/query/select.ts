@@ -1,12 +1,14 @@
 import { array, object } from 'sukima';
 import { ObjectSchema } from 'sukima/schemas/object';
-import { QueryBuilder, JoinClause } from 'knex';
+import { QueryBuilder, QueryInterface, JoinClause } from 'knex';
 
-import { makeRaw } from './utils';
+import { Query, QueryProps } from './base';
+import { makeKnexRaw } from '../utils/makeKnexRaw';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
-import { Expression, AnyExpression } from '../expression';
-import { Table, MetaData } from '../table';
-import { Condition } from '../condition';
+import { Expression, AnyExpression, equals } from '../expression';
+import { Table, DataSet, Column } from '../table';
+import { applyMixins } from '../utils/applyMixins';
+import { mapValues } from '../utils/mapValues';
 
 export type SelectOrderByDirection = 'asc' | 'desc';
 
@@ -18,55 +20,102 @@ export type SelectOrderBy = {
 export type SelectJoin = {
   table: string;
   alias?: string;
-  on: Condition;
-}
+  on: AnyExpression;
+};
 
-export type SelectQueryProps = ConditionalQueryProps & {
-  columns?: Expression<any, string>[];
-  orderBys?: SelectOrderBy[];
-  groupBys?: Expression<any, string>[];
-  having?: Condition;
-  joins?: SelectJoin[];
-  limit?: number;
-  offset?: number;
-}
+export type SelectQueryProps<Model> =
+  QueryProps<Model[]> &
+  ConditionalQueryProps &
+  {
+    from?: WrappedSelectQuery<Model> | Table<Model, any>;
+    columns?: Expression<any, string>[];
+    orderBys?: SelectOrderBy[];
+    groupBys?: Expression<any, string>[];
+    having?: AnyExpression;
+    joins?: SelectJoin[];
+    limit?: number;
+    offset?: number;
+    as?: string;
+  };
 
 export type KeyValue<Value, Key extends string> = {
   [K in Key]: Value
-}
+};
 
-export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryProps, Model, string, string, any> {
+export class SelectQuery<Model>
+  extends Query<Model[], SelectQueryProps<Model>>
+  implements ConditionalQuery<SelectQueryProps<Model>> {
 
-  constructor(
-    tableMeta: MetaData<Model, string, string, any>,
-  ) {
-    super(tableMeta, {}, array().items(object()));
+  where: (condition: AnyExpression) => this;
+
+  constructor(schema: ObjectSchema<Model>) {
+    super({
+      schema: array().items(schema),
+    });
   }
 
-  join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2, Value>(
-    table2: Table<Model2, TableName2, Alias2, Id2>,
+  as(alias: string) {
+    const { columns } = this.props;
+
+    if (!columns || columns.length === 0) {
+      throw new Error('Can not wrap query without columns.');
+    }
+
+    const indexedColumns = columns.reduce(
+      (indexed, column) => {
+        return Object.assign(
+          {},
+          indexed,
+          { [column.alias as any]: new Column<any, any>(column.schema, column.alias, alias) },
+        );
+      },
+      {} as { readonly [P in keyof Model]: Expression<Model[P], P> }
+    );
+
+    const meta = {
+      alias,
+      schema: object().properties(
+        mapValues(indexedColumns, column => column.schema),
+      ),
+    };
+
+    return Object.assign(
+      this.extend({
+        as: alias,
+      }),
+      {
+        $meta: meta,
+      },
+      indexedColumns,
+    ) as any as WrappedSelectQuery<Model>;
+  }
+
+  from(from: DataSet<any> | WrappedSelectQuery<any>) {
+    return this.extend({
+      from,
+    });
+  }
+
+  join<Model2, Id2 extends keyof Model2, Value>(
+    table2: Table<Model2, Id2>,
     sourceColumn: Expression<Value, string>,
     targetColumn: Expression<Value, string>,
-  ): this;
+  ): WrappedSelectQuery<Model>;
 
-  join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2, Value>(
-    table2: Table<Model2, TableName2, Alias2, Id2>,
-    condition: Condition,
-  ): this;
+  join<Model2, Id2 extends keyof Model2, Value>(
+    table2: Table<Model2, Id2>,
+    condition: AnyExpression,
+  ): WrappedSelectQuery<Model>;
 
-  join<Model2, TableName2 extends string, Alias2 extends string, Id2 extends keyof Model2>(
-    table2: Table<Model2, TableName2, Alias2, Id2>,
+  join<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
     ...args: any[],
   ) {
     if (args.length === 2) {
-      const expression0 = args[0];
-      const expression1 = args[1];
-      if (expression0 instanceof Expression && expression1 instanceof Expression) {
-        return this.join(table2, expression0.equals(expression1));
-      }
+      return this.join(table2, equals(args[0], args[1]));
     } else if (args.length === 1) {
       const condition = args[0];
-      if (condition instanceof Condition) {
+      if (condition instanceof Expression) {
         return this.extend({
           joins: (this.props.joins || []).concat({
             table: table2.$meta.name,
@@ -84,7 +133,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     return this.extend({ groupBys: this.props.groupBys ? this.props.groupBys.concat(columns) : columns });
   }
 
-  having(condition: Condition) {
+  having(condition: AnyExpression) {
     return this.extend({ having: this.props.having ? this.props.having.and(condition) : condition });
   }
 
@@ -93,11 +142,11 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     return this.extend({ orderBys: this.props.orderBys ? this.props.orderBys.concat(orderBy) : [orderBy] });
   }
 
-  limit(limit: number): this {
+  limit(limit: number) {
     return this.extend({ limit });
   }
 
-  offset(offset: number): this {
+  offset(offset: number) {
     return this.extend({ offset });
   }
 
@@ -227,7 +276,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
     & KeyValue<Value6, Key6>
   >;
 
-  columns<Model2>(table: Table<Model2, string, string, any>): SelectQuery<Model & Model2>;
+  columns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2>;
 
   columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], P> }): SelectQuery<Model & Mapping>;
 
@@ -251,28 +300,34 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
       }
     }
 
-    const newColumns = this.props.columns ? this.props.columns.concat(columns) : columns;
+    const expressions: Expression<any, string>[] = columns;
 
-    return this
-      .extend(
-        { columns: newColumns },
-        array().items(
-          newColumns.reduce(
-            (schema: ObjectSchema<any>, column) => {
-              if (!(column instanceof Expression)) {
-                throw new Error('Input argument is not Column object.');
-              }
+    const newColumns = this.props.columns ? this.props.columns.concat(expressions) : expressions;
 
-              return schema.addProperty(column.alias, column.schema);
-            },
-            object().additionalProperties(false) as ObjectSchema<any>,
-          ),
-        ),
-      );
+    const schema = newColumns.reduce<ObjectSchema<any>>(
+      (schema: ObjectSchema<any>, column) => {
+        if (!(column instanceof Expression)) {
+          throw new Error('Input argument is not Column object.');
+        }
+
+        if (column.alias === undefined) {
+          throw new Error('Column does not has alias');
+        }
+
+        return schema.addProperty(column.alias, column.schema);
+      },
+      object().additionalProperties(false) as ObjectSchema<any>,
+    );
+
+    return this.extend({
+      columns: newColumns,
+      schema: array().items(schema),
+    });
   }
 
-  protected transformQuery(qb: QueryBuilder): QueryBuilder {
+  executeQuery(query: QueryInterface): QueryBuilder {
     const {
+      from,
       columns,
       orderBys,
       groupBys,
@@ -283,12 +338,32 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
       offset,
     } = this.props;
 
+    let qb;
+
+    if (from) {
+      if (from instanceof SelectQuery) {
+        qb = query.from((qb: QueryInterface) => {
+          if (from.props.as) {
+            return from.executeQuery(qb).as(from.props.as);
+          } else {
+            return from.executeQuery(qb);
+          }
+        });
+      } else if (from.$meta) {
+        qb = query.from(from.$meta.name).as(from.$meta.alias);
+      } else {
+        throw new Error('Invalid from');
+      }
+    } else {
+      throw new Error('No column');
+    }
+
     if (!columns || columns.length === 0) {
       throw new Error('No columns to query.');
     } else {
       qb = columns.reduce(
         (qb, column) => qb.select(
-          makeRaw(qb, `${column.expression} AS ??`, [...column.bindings, column.alias])),
+          makeKnexRaw(qb, `${column.expression} AS ??`, [...column.bindings, column.alias], true)),
         qb,
       );
     }
@@ -303,29 +378,34 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
 
     if (orderBys !== undefined && orderBys.length > 0) {
       qb = orderBys.reduce(
-       (qb, { column, direction }) => qb.orderByRaw(makeRaw(qb, `${column.expression} ${direction}`, column.bindings)),
+       (qb, { column, direction }) => qb.orderByRaw(
+         makeKnexRaw(qb, `${column.expression} ${direction}`, column.bindings, true)
+       ),
        qb,
       );
     }
 
     if (groupBys !== undefined && groupBys.length > 0) {
       qb = groupBys.reduce(
-       (qb, column) => qb.groupBy(makeRaw(qb, column.expression, column.bindings)),
+       (qb, column) => qb.groupBy(makeKnexRaw(qb, column.expression, column.bindings, true)),
        qb,
       );
     }
 
     if (where !== undefined) {
-      qb = qb.where(makeRaw(qb, where.sql, where.bindings));
+      qb = qb.where(makeKnexRaw(qb, where.expression, where.bindings, true));
     }
 
     if (having !== undefined) {
-      qb = qb.having(makeRaw(qb, having.sql, having.bindings));
+      qb = qb.having(makeKnexRaw(qb, having.expression, having.bindings, true));
     }
 
     if (joins !== undefined && joins.length > 0) {
       qb = joins.reduce(
-       (qb, join) => qb.join(join.table, (q: JoinClause) => q.on(makeRaw(qb, join.on.sql, join.on.bindings))),
+       (qb, join) => qb.join(
+         join.table,
+         (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.expression, join.on.bindings, true))
+       ),
        qb,
       );
     }
@@ -334,3 +414,7 @@ export class SelectQuery<Model> extends ConditionalQuery<Model[], SelectQueryPro
   }
 
 }
+
+applyMixins(SelectQuery, ConditionalQuery);
+
+export type WrappedSelectQuery<Model> = SelectQuery<Model> & DataSet<Model>;

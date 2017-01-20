@@ -1,7 +1,4 @@
-import { Schema, number, integer } from 'sukima';
-import flatten = require('lodash/flatten');
-
-import { Condition } from './condition';
+import { Schema, number, integer, boolean } from 'sukima';
 
 const sumSchema = number().nullable();
 
@@ -11,15 +8,9 @@ const minSchema = number().nullable();
 
 const maxSchema = number().nullable();
 
-const countSchema = integer().nullable();
+const countSchema = integer().minimum(0).nullable();
 
-export type ConditionOperator =
-  '=' | '>' | '<' | '>=' | '<=' |
-  'like' | 'not like' |
-  'between' | 'not between' |
-  'in' | 'not in';
-
-export type AggregateFunction = 'sum' | 'avg' | 'min' | 'max' | 'count';
+const conditionSchema = boolean();
 
 export type Value<Type> = Type | Expression<Type, string>;
 
@@ -31,16 +22,19 @@ function getExpression<Type>(value: Value<Type>) {
   }
 }
 
-function mergeBindings(bindings: any[], ...values: (Value<any> | Value<any>[])[]) {
-  return flatten(values).reduce(
-    (bindings, value) => {
-      if (value instanceof Expression) {
-        return bindings.concat(value.bindings);
-      } else {
-        return bindings.concat(value);
-      }
-    },
-    bindings,
+function getBindings<Type>(value: Value<Type>) {
+  if (value instanceof Expression) {
+    return value.bindings;
+  } else {
+    return [];
+  }
+}
+
+export function equals<T>(lhs: Value<T>, rhs: Value<T>) {
+  return new Expression<boolean, any>(
+    `${getExpression(lhs)} = ${getExpression(rhs)}`,
+    [...getBindings(lhs), ...getBindings(rhs)],
+    conditionSchema,
   );
 }
 
@@ -50,7 +44,7 @@ export class Expression<OutputType, Field extends string> {
     public readonly expression: string,
     public readonly bindings: any[],
     public readonly schema: Schema<OutputType>,
-    public readonly alias: Field,
+    public readonly alias?: Field,
   ) {
 
   }
@@ -73,10 +67,10 @@ export class Expression<OutputType, Field extends string> {
     );
   }
 
-  is<Type>(operator: string, value: Value<Type>): Condition {
+  is<Type>(operator: string, value: Value<Type>) {
     const expression = `${this.expression} ${operator} ${getExpression(value)}`;
-    const bindings = mergeBindings(this.bindings, value);
-    return new Condition(expression, bindings);
+    const bindings = this.bindings.concat(value);
+    return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   equals(target: Value<OutputType>) {
@@ -113,34 +107,34 @@ export class Expression<OutputType, Field extends string> {
 
   between(lowerBound: Value<OutputType>, upperBound: Value<OutputType>) {
     const expression = `${this.expression} BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
-    const bindings = mergeBindings(this.bindings, lowerBound, upperBound);
-    return new Condition(expression, bindings);
+    const bindings = this.bindings.concat(lowerBound, upperBound);
+    return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notBetween(lowerBound: number, upperBound: number) {
     const expression = `${this.expression} NOT BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
-    const bindings = mergeBindings(this.bindings, lowerBound, upperBound);
-    return new Condition(expression, bindings);
+    const bindings = this.bindings.concat(lowerBound, upperBound);
+    return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   in(values: Value<OutputType>[]) {
     const expression = `${this.expression} IN (${values.map(getExpression).join(',')})}`;
-    const bindings = mergeBindings(this.bindings, values);
-    return new Condition(expression, bindings);
+    const bindings = this.bindings.concat(values);
+    return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notIn(values: Value<OutputType>[]) {
     const expression = `${this.expression} NOT IN (${values.map(getExpression).join(',')})}`;
-    const bindings = mergeBindings(this.bindings, values);
-    return new Condition(expression, bindings);
+    const bindings = this.bindings.concat(values);
+    return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   isNull() {
-    return new Condition(`${this.expression} IS NULL`, this.bindings);
+    return new Expression<boolean, any>(`${this.expression} IS NULL`, this.bindings, conditionSchema);
   }
 
   isNotNull() {
-    return new Condition(`${this.expression} IS NOT NULL`, this.bindings);
+    return new Expression(`${this.expression} IS NOT NULL`, this.bindings, conditionSchema);
   }
 
   withSchema<T>(schema: Schema<T>) {
@@ -153,7 +147,7 @@ export class Expression<OutputType, Field extends string> {
   }
 
   sum() {
-    return new Expression<number, 'sum'>(
+    return new Expression<number | null, 'sum'>(
       `SUM(${this.expression})`,
       this.bindings,
       sumSchema,
@@ -162,7 +156,7 @@ export class Expression<OutputType, Field extends string> {
   }
 
   avg() {
-    return new Expression<number, 'avg'>(
+    return new Expression<number | null, 'avg'>(
       `AVG(${this.expression})`,
       this.bindings,
       avgSchema,
@@ -171,7 +165,7 @@ export class Expression<OutputType, Field extends string> {
   }
 
   min() {
-    return new Expression<number, 'min'>(
+    return new Expression<number | null, 'min'>(
       `MIN(${this.expression})`,
       this.bindings,
       minSchema,
@@ -180,7 +174,7 @@ export class Expression<OutputType, Field extends string> {
   }
 
   max() {
-    return new Expression<number, 'max'>(
+    return new Expression<number | null, 'max'>(
       `MAX(${this.expression})`,
       this.bindings,
       maxSchema,
@@ -189,11 +183,38 @@ export class Expression<OutputType, Field extends string> {
   }
 
   count() {
-    return new Expression<number, 'count'>(
+    return new Expression<number | null, 'count'>(
       `COUNT(${this.expression})`,
       this.bindings,
       countSchema,
       'count',
+    );
+  }
+
+  not() {
+    return new Expression<boolean, 'not'>(
+      `NOT (${this.expression})`,
+      this.bindings,
+      conditionSchema,
+      'not',
+    );
+  }
+
+  and(condition: Expression<any, any>) {
+    return new Expression<boolean, 'and'>(
+      `${this.expression} AND (${condition.expression})`,
+      this.bindings.concat(condition.bindings),
+      conditionSchema,
+      'and',
+    );
+  }
+
+  or(condition: Expression<any, any>) {
+    return new Expression<boolean, 'or'>(
+      `${this.expression} OR (${condition.expression})`,
+      this.bindings.concat(condition.bindings),
+      conditionSchema,
+      'or',
     );
   }
 

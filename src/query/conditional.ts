@@ -1,20 +1,26 @@
-import { Query } from './base';
+import { Extendable } from './extendable';
+import { applyMixins } from '../utils/applyMixins';
 
-import { Condition } from '../condition';
+import { Expression } from '../expression';
 
 export type ConditionalQueryProps = {
-  where?: Condition;
-}
+  where?: Expression<any, any>;
+};
 
-export abstract class ConditionalQuery<
-  Value, Props extends ConditionalQueryProps,
-  Model, Name extends string, Alias extends string, Id extends keyof Model,
-> extends Query<Value, Props, Model, Name, Alias, Id> {
+export class ConditionalQuery<
+  Props extends ConditionalQueryProps
+> implements Extendable<Props> {
 
-  where(condition: Condition) {
+  readonly props: Props;
+
+  extend: (props: Partial<Props>) => this;
+
+  where(condition: Expression<any, any>) {
     return this.extend({
       where: this.props.where ? this.props.where.and(condition) : condition,
     } as Props);
   }
 
 }
+
+applyMixins(ConditionalQuery, Extendable);

@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/bluebird": "^3.0.37",
     "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.37",
+    "@types/mocha": "^2.2.38",
     "@types/node": "7.0.0",
     "chai": "^3.5.0",
     "dts-bundle": "^0.6.1",
@@ -26,15 +26,15 @@
     "knex": "^0.12.6",
     "mocha": "^3.2.0",
     "mysql": "^2.12.0",
-    "nyc": "^10.0.0",
-    "source-map-support": "^0.4.9",
+    "nyc": "^10.1.2",
+    "source-map-support": "^0.4.10",
     "ts-node": "^2.0.0",
     "tslint": "^4.3.1",
     "tslint-microsoft-contrib": "^4.0.0",
     "typescript": "^2.1.5"
   },
   "dependencies": {
-    "sukima": "^0.5.1"
+    "sukima": "^0.5.5"
   },
   "nyc": {
     "include": [

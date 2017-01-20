@@ -1,48 +1,71 @@
-import { Schema } from 'sukima';
-import mapValues = require('lodash/mapValues');
+import { Schema, ObjectSchema } from 'sukima';
 
 import { Expression } from './expression';
 
-export class Column<
-  Model, Name extends string, Alias extends string, Id extends keyof Model, Field extends keyof Model,
-> extends Expression<Model[Field], Field> {
+export class ColumnBinding {
 
   constructor(
-    meta: MetaData<Model, Name, Alias, Id>,
-    field: Field,
+    public readonly field: string,
+    public readonly dataSetAlias: string,
   ) {
-    super('??', [`${meta.alias}.${field}`], meta.schema.getPropertySchema(field), field);
+
   }
 
 }
 
-export interface MetaData<Model, Name extends string, Alias extends string, Id extends keyof Model> {
+export class Column<Model, Field extends keyof Model> extends Expression<Model[Field], Field> {
 
-  readonly schema: Schema<Model>;
+  constructor(
+    schema: Schema<Model[Field]>,
+    field: Field,
+    dataSetAlias: string,
+  ) {
+    super('??', [new ColumnBinding(field, dataSetAlias)], schema, field);
+  }
 
-  readonly name: Name;
+}
+
+export interface TableMeta<Model, Id extends keyof Model> extends DataSetMeta<Model> {
+
+  readonly name: string;
 
   readonly idAttribute: Id;
 
-  readonly alias: Alias;
+}
+
+export interface DataSetMeta<Model> {
+
+  readonly schema: ObjectSchema<Model>;
+
+  readonly alias: string;
 
 }
 
-export type Table<Model, Name extends string, Alias extends string, Id extends keyof Model> = {
+export type Table<Model, Id extends keyof Model> = {
 
-  readonly [P in keyof Model]: Column<Model, Name, Alias, Id, P>;
+  readonly [P in keyof Model]: Column<Model, P>;
 
 } & {
 
-  readonly $meta: MetaData<Model, Name, Alias, Id>;
+  readonly $meta: TableMeta<Model, Id>;
 
-}
+};
 
-export function createTable<Model, Name extends string, Id extends keyof Model>(
-  name: Name,
-  schema: Schema<Model>,
+export type DataSet<Model> = {
+
+  readonly [P in keyof Model]: Expression<Model[P], P>;
+
+} & {
+
+  readonly $meta: DataSetMeta<Model>;
+
+};
+
+export function createTable<Model, Id extends keyof Model>(
+  name: string,
+  schema: ObjectSchema<Model>,
   idAttribute: Id,
-): Table<Model, Name, Name, Id> {
+): Table<Model, Id> {
   const meta = {
     name,
     alias: name,
@@ -50,13 +73,19 @@ export function createTable<Model, Name extends string, Id extends keyof Model>(
     idAttribute,
   };
 
-  const { properties } = schema.schema;
-  const columns = mapValues(properties, (jsonSchema, key: any) => {
-    return new Column(meta, key);
-  });
+  const keys = schema.keys();
+  const indexedColumns = keys.reduce(
+    (prevValue, key) => {
+      return {
+        ...prevValue,
+        [key]: new Column<Model, any>(meta.schema.getPropertySchema(key as any), key, meta.alias),
+      };
+    },
+    {} as any,
+  )
 
   return {
     $meta: meta,
-    ...columns,
-  } as any as Table<Model, Name, Name, Id>;
+    ...indexedColumns,
+  } as Table<Model, Id>;
 }

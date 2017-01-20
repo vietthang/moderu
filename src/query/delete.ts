@@ -1,32 +1,39 @@
 import { integer } from 'sukima';
-import { QueryBuilder } from 'knex';
+import { QueryBuilder, QueryInterface } from 'knex';
 
-import { MetaData } from '../table';
+import { Expression } from '../expression';
+import { TableMeta } from '../table';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
-import { makeRaw } from './utils';
+import { Query, QueryProps } from './base';
+import { makeKnexRaw } from '../utils/makeKnexRaw';
+import { applyMixins } from '../utils/applyMixins';
 
-export class DeleteQuery<
-  Model, Name extends string, Alias extends string, Id extends keyof Model,
-> extends ConditionalQuery<number, ConditionalQueryProps, Model, Name, Alias, Id> {
+export type DeleteProps = QueryProps<number> & ConditionalQueryProps;
+
+export class DeleteQuery<Model> extends Query<number, DeleteProps> implements ConditionalQuery<DeleteProps> {
 
   private static schema = integer().minimum(0);
 
+  where: (condition: Expression<any, any>) => this;
+
   constructor(
-    tableMeta: MetaData<Model, Name, Alias, Id>,
+    private tableMeta: TableMeta<Model, any>,
   ) {
-    super(tableMeta, {}, DeleteQuery.schema);
+    super({ schema: DeleteQuery.schema });
   }
 
-  protected transformQuery(qb: QueryBuilder): QueryBuilder {
-    const builder = qb.del();
+  protected executeQuery(qb: QueryInterface): QueryBuilder {
+    const builder = qb.table(this.tableMeta.name).del();
 
     const { where } = this.props;
 
     if (where) {
-      return builder.where(makeRaw(qb, where.sql, where.bindings));
+      return builder.where(makeKnexRaw(qb, where.expression, where.bindings, false));
     } else {
       return builder;
     }
   }
 
 }
+
+applyMixins(DeleteQuery, ConditionalQuery);

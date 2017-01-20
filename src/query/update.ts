@@ -1,67 +1,78 @@
 import { integer } from 'sukima';
-import { QueryBuilder } from 'knex';
+import { QueryBuilder, QueryInterface } from 'knex';
 
-import { MetaData, Column } from '../table';
+import { Query, QueryProps } from './base';
+import { TableMeta, Column } from '../table';
 import { Expression } from '../expression';
+import { ModificationQueryProps, ValidationMode, ModificationModel, ModificationQuery } from './modification';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
-import { makeRaw } from './utils';
+import { makeKnexRaw } from '../utils/makeKnexRaw';
+import { mapValues } from '../utils/mapValues';
+import { applyMixins } from '../utils/applyMixins';
 
-export type UpdateModel<Model> = Partial<Model | { [K in keyof Model]: Expression<Model[K], K> }>;
+export type UpdateQueryProps<Model> =
+  QueryProps<number> &
+  ModificationQueryProps<Model> &
+  ConditionalQueryProps & {
+  tableName: string;
+};
 
-export type UpdateQueryProps<Model> = ConditionalQueryProps & {
-  model?: UpdateModel<Model>;
-}
-
-export class UpdateQuery<
-  Model, Name extends string, Alias extends string, Id extends keyof Model,
-> extends ConditionalQuery<number, UpdateQueryProps<Model>, Model, Name, Alias, Id> {
+export class UpdateQuery<Model>
+  extends Query<number, UpdateQueryProps<Model>>
+  implements ModificationQuery<Model, UpdateQueryProps<Model>>, ConditionalQuery<UpdateQueryProps<Model>> {
 
   private static schema = integer().minimum(0);
 
-  constructor(
-    tableMeta: MetaData<Model, Name, Alias, Id>,
-  ) {
-    super(tableMeta, { }, UpdateQuery.schema);
-  }
+  value: (model: ModificationModel<Model>) => this;
 
-  set(model: UpdateModel<Model>): this;
-
-  set<K extends keyof Model>(
-    column: K | Column<Model, Name, Alias, Id, K>,
+  set: <K extends keyof Model>(
+    column: K | Column<Model, K>,
     value: Model[K] | Expression<Model[K], string>,
-  ): this;
+  ) => this;
 
-  set(key: any, value?: any): this {
-    if (value !== undefined) {
-      if (typeof key === 'string') {
-        return this.set({ [key]: value } as any as UpdateModel<Model>);
-      } else {
-        const column: Column<Model, Name, Alias, Id, any> = key;
+  where: (condition: Expression<any, any>) => this;
 
-        return this.set({ [column.alias]: value } as any as UpdateModel<Model>);
-      }
-    } else {
-      const model: {} = key;
-
-      return this.extend({
-        model: {
-          ...(this.props.model || {}),
-          ...model,
-        } as Partial<Model>,
-      });
-    }
+  constructor(
+    tableMeta: TableMeta<Model, any>,
+  ) {
+    super({
+      validationMode: ValidationMode.SkipExpressions,
+      schema: UpdateQuery.schema,
+      inputSchema: tableMeta.schema.getPartialSchema(),
+      tableName: tableMeta.name,
+    });
   }
 
-  protected transformQuery(qb: QueryBuilder): QueryBuilder {
-    const { where, model } = this.props;
+  validationMode(validationMode: ValidationMode) {
+    return this.extend({
+      validationMode,
+    });
+  }
 
-    const builder = qb.update(model);
+  protected executeQuery(query: QueryInterface): QueryBuilder {
+    const { where, model, tableName } = this.props;
+
+    if (!model) {
+      throw new Error('Update without any model.');
+    }
+
+    const rawModel = mapValues(model, (value, key) => {
+      if (value instanceof Expression) {
+        return makeKnexRaw(query, value.expression, value.bindings, false);
+      } else {
+        return value;
+      }
+    });
+
+    const builder = query.table(tableName).update(rawModel);
 
     if (where) {
-      return builder.where(makeRaw(qb, where.sql, where.bindings));
+      return builder.where(makeKnexRaw(query, where.expression, where.bindings, false));
     } else {
       return builder;
     }
   }
 
 }
+
+applyMixins(UpdateQuery, ModificationQuery, ConditionalQuery);

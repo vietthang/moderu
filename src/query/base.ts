@@ -1,46 +1,34 @@
 import { Schema, validate } from 'sukima';
 import { QueryInterface, QueryBuilder } from 'knex';
 
-import { MetaData } from '../table';
+import { Extendable } from './extendable';
+import { applyMixins } from '../utils/applyMixins';
 
-export abstract class Query<
-  Value, PropTypes,
-  Model, Name extends string, Alias extends string, Id extends keyof Model,
-> {
+export type QueryProps<Value> = {
+  schema: Schema<Value>;
+};
 
-  constructor(
-    protected readonly tableMeta: MetaData<Model, Name, Alias, Id>,
-    protected readonly props: PropTypes,
-    private readonly schema: Schema<Value>,
-  ) {
+export abstract class Query<Value, Props extends QueryProps<Value>> implements Extendable<Props> {
 
+  readonly props: Props;
+
+  extend: (props: Partial<Props>) => this;
+
+  constructor(props: Props) {
+    this.props = props;
   }
 
   async execute(query: QueryInterface): Promise<Value> {
-    const qb = query.table(this.tableMeta.name);
-    const ret = await (this.transformQuery(qb) as Promise<any>);
-    return validate(this.schema, ret);
+    const ret = await (this.executeQuery(query) as Promise<any>);
+    return await validate(this.props.schema, ret, { convert: true });
   }
 
   toSQL(query: QueryInterface): any {
-    const qb = query.table(this.tableMeta.name);
-    return this.transformQuery(qb).toSQL();
+    return this.executeQuery(query).toSQL();
   }
 
-  protected abstract transformQuery(qb: QueryBuilder): QueryBuilder;
-
-  protected extend<T>(props: PropTypes, schema?: Schema<T>): this {
-    return Object.assign(
-      Object.create(this.constructor.prototype),
-      this,
-      {
-        props: {
-          ...this.props as any,
-          ...props as any,
-        },
-      },
-      schema ? { schema } : {},
-    );
-  }
+  protected abstract executeQuery(qb: QueryInterface): QueryBuilder;
 
 }
+
+applyMixins(Query, Extendable);

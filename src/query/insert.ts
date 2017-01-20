@@ -1,28 +1,60 @@
-import { QueryBuilder } from 'knex';
+import { QueryBuilder, QueryInterface } from 'knex';
 
-import { MetaData } from '../table';
-import { Query } from './base';
+import { TableMeta, Column } from '../table';
+import { Expression } from '../expression';
+import { Query, QueryProps } from './base';
+import { makeKnexRaw } from '../utils/makeKnexRaw';
+import { mapValues } from '../utils/mapValues';
+import { ModificationQuery, ModificationQueryProps, ValidationMode, ModificationModel } from './modification';
 
-export type InsertQueryProps<Model> = {
-  model?: Partial<Model>;
-}
+import { applyMixins } from '../utils/applyMixins';
 
-export class InsertQuery<
-  Model, Name extends string, Alias extends string, Id extends keyof Model,
-> extends Query<Model[Id], InsertQueryProps<Model>, Model, Name, Alias, Id> {
+export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[Id]> & ModificationQueryProps<Model> & {
+  tableName: string;
+};
+
+export class InsertQuery<Model, Id extends keyof Model>
+  extends Query<Model[Id], InsertQueryProps<Model, Id>>
+  implements ModificationQuery<Model, InsertQueryProps<Model, Id>> {
+
+  validationMode: (validationMode: ValidationMode) => this;
+
+  value: (model: ModificationModel<Model>) => this;
+
+  set: <K extends keyof Model>(
+    column: K | Column<Model, K>,
+    value: Model[K] | Expression<Model[K], string>,
+  ) => this;
 
   constructor(
-    tableMeta: MetaData<Model, Name, Alias, Id>,
+    tableMeta: TableMeta<Model, Id>,
   ) {
-    super(tableMeta, { }, tableMeta.schema.getPropertySchema(tableMeta.idAttribute));
+    super({
+      schema: tableMeta.schema.getPropertySchema(tableMeta.idAttribute),
+      validationMode: ValidationMode.SkipExpressions,
+      inputSchema: tableMeta.schema.getPartialSchema(),
+      tableName: tableMeta.name,
+    });
   }
 
-  value(model: Partial<Model>) {
-    return this.extend({ model });
-  }
+  protected executeQuery(query: QueryInterface): QueryBuilder {
+    const { model, tableName } = this.props;
 
-  protected transformQuery(qb: QueryBuilder): QueryBuilder {
-    return qb.insert(this.props.model);
+    if (!model) {
+      throw new Error('Update without any model.');
+    }
+
+    const rawModel = mapValues(model, (value, key) => {
+      if (value instanceof Expression) {
+        return makeKnexRaw(query, value.expression, value.bindings, false);
+      } else {
+        return value;
+      }
+    });
+
+    return query.table(tableName).insert(rawModel);
   }
 
 }
+
+applyMixins(InsertQuery, ModificationQuery);
