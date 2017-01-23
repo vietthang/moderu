@@ -1,6 +1,7 @@
 import { QueryBuilder, QueryInterface } from 'knex';
 
-import { TableMeta, Column } from '../table';
+import { TableMeta } from '../table';
+import { Column } from '../column';
 import { Expression } from '../expression';
 import { Query, QueryProps } from './base';
 import { makeKnexRaw } from '../utils/makeKnexRaw';
@@ -41,7 +42,7 @@ export class InsertQuery<Model, Id extends keyof Model>
     const { model, tableName } = this.props;
 
     if (!model) {
-      throw new Error('Update without any model.');
+      throw new Error('Insert without any model.');
     }
 
     const rawModel = mapValues(model, (value, key) => {

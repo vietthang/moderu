@@ -2,7 +2,8 @@ import { integer } from 'sukima';
 import { QueryBuilder, QueryInterface } from 'knex';
 
 import { Query, QueryProps } from './base';
-import { TableMeta, Column } from '../table';
+import { TableMeta } from '../table';
+import { Column } from '../column';
 import { Expression } from '../expression';
 import { ModificationQueryProps, ValidationMode, ModificationModel, ModificationQuery } from './modification';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';

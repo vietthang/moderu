@@ -1,11 +1,11 @@
 import { ObjectSchema, validate } from 'sukima';
 
-import { Column } from '../table';
+import { Column } from '../column';
 import { Expression } from '../expression';
 import { Extendable } from './extendable';
 import { applyMixins } from '../utils/applyMixins';
 
-export type ModificationModel<Model> = Partial<{ [K in keyof Model]: (Expression<Model[K], K> | Model[K]) }>;
+export type ModificationModel<Model> = Partial<{ [K in keyof Model]: (Expression<Model[K], any> | Model[K]) }>;
 
 export enum ValidationMode {
   SkipExpressions = 0,

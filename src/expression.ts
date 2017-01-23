@@ -31,6 +31,13 @@ function getBindings<Type>(value: Value<Type>) {
 }
 
 /** @internal */
+export interface Bindable {
+
+  bind(isSelect: boolean): string;
+
+}
+
+/** @internal */
 export function equals<T>(lhs: Value<T>, rhs: Value<T>) {
   return new Expression<boolean, any>(
     `${getExpression(lhs)} = ${getExpression(rhs)}`,

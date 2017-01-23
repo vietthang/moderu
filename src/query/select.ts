@@ -6,7 +6,8 @@ import { Query, QueryProps } from './base';
 import { makeKnexRaw } from '../utils/makeKnexRaw';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
 import { Expression, equals } from '../expression';
-import { Table, DataSet, Column } from '../table';
+import { Table, DataSet } from '../table';
+import { Column } from '../column';
 import { applyMixins } from '../utils/applyMixins';
 import { mapValues } from '../utils/mapValues';
 

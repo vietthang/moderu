@@ -7,7 +7,7 @@ export type ConditionalQueryProps = {
   where?: Expression<any, any>;
 };
 
-export class ConditionalQuery<Props extends ConditionalQueryProps> /** @internal */implements Extendable<Props> {
+export class ConditionalQuery<Props extends ConditionalQueryProps> implements Extendable<Props> {
 
   /** @internal */
   readonly props: Props;

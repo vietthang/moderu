@@ -1,30 +1,7 @@
-import { Schema, ObjectSchema } from 'sukima';
+import { ObjectSchema } from 'sukima';
 
 import { Expression } from './expression';
-
-/** @internal */
-export class ColumnBinding {
-
-  constructor(
-    public readonly field: string,
-    public readonly dataSetAlias: string,
-  ) {
-
-  }
-
-}
-
-export class Column<Model, Field extends keyof Model> extends Expression<Model[Field], Field> {
-
-  constructor(
-    schema: Schema<Model[Field]>,
-    field: Field,
-    dataSetAlias: string,
-  ) {
-    super('??', [new ColumnBinding(field, dataSetAlias)], schema, field);
-  }
-
-}
+import { Column } from './column';
 
 export interface TableMeta<Model, Id extends keyof Model> extends DataSetMeta<Model> {
 
