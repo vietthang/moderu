@@ -1,3 +1,4 @@
+/** @internal */
 export function mapValues<T, K extends keyof T>(
   source: T,
   functor: (value: T[K], key: K) => any,

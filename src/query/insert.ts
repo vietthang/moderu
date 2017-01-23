@@ -26,9 +26,8 @@ export class InsertQuery<Model, Id extends keyof Model>
     value: Model[K] | Expression<Model[K], string>,
   ) => this;
 
-  constructor(
-    tableMeta: TableMeta<Model, Id>,
-  ) {
+  /** @internal */
+  constructor(tableMeta: TableMeta<Model, Id>) {
     super({
       schema: tableMeta.schema.getPropertySchema(tableMeta.idAttribute),
       validationMode: ValidationMode.SkipExpressions,
@@ -37,6 +36,7 @@ export class InsertQuery<Model, Id extends keyof Model>
     });
   }
 
+  /** @internal */
   protected executeQuery(query: QueryInterface): QueryBuilder {
     const { model, tableName } = this.props;
 

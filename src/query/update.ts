@@ -21,7 +21,10 @@ export class UpdateQuery<Model>
   extends Query<number, UpdateQueryProps<Model>>
   implements ModificationQuery<Model, UpdateQueryProps<Model>>, ConditionalQuery<UpdateQueryProps<Model>> {
 
+  /** @internal */
   private static schema = integer().minimum(0);
+
+  validationMode: (validationMode: ValidationMode) => this;
 
   value: (model: ModificationModel<Model>) => this;
 
@@ -32,6 +35,7 @@ export class UpdateQuery<Model>
 
   where: (condition: Expression<any, any>) => this;
 
+  /** @internal */
   constructor(
     tableMeta: TableMeta<Model, any>,
   ) {
@@ -43,12 +47,7 @@ export class UpdateQuery<Model>
     });
   }
 
-  validationMode(validationMode: ValidationMode) {
-    return this.extend({
-      validationMode,
-    });
-  }
-
+  /** @internal */
   protected executeQuery(query: QueryInterface): QueryBuilder {
     const { where, model, tableName } = this.props;
 

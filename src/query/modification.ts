@@ -65,8 +65,10 @@ function validateDisallowExpressions<Model>(schema: ObjectSchema<Partial<Model>>
 
 export class ModificationQuery<Model, Props extends ModificationQueryProps<Model>> implements Extendable<Props> {
 
+  /** @internal */
   readonly props: Props;
 
+  /** @internal */
   extend: (props: Partial<Props>) => this;
 
   validationMode(validationMode: ValidationMode) {

@@ -5,7 +5,7 @@ import { QueryBuilder, QueryInterface, JoinClause } from 'knex';
 import { Query, QueryProps } from './base';
 import { makeKnexRaw } from '../utils/makeKnexRaw';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
-import { Expression, AnyExpression, equals } from '../expression';
+import { Expression, equals } from '../expression';
 import { Table, DataSet, Column } from '../table';
 import { applyMixins } from '../utils/applyMixins';
 import { mapValues } from '../utils/mapValues';
@@ -20,7 +20,7 @@ export type SelectOrderBy = {
 export type SelectJoin = {
   table: string;
   alias?: string;
-  on: AnyExpression;
+  on: Expression<any, any>;
 };
 
 export type SelectQueryProps<Model> =
@@ -31,7 +31,7 @@ export type SelectQueryProps<Model> =
     columns?: Expression<any, string>[];
     orderBys?: SelectOrderBy[];
     groupBys?: Expression<any, string>[];
-    having?: AnyExpression;
+    having?: Expression<any, any>;
     joins?: SelectJoin[];
     limit?: number;
     offset?: number;
@@ -46,8 +46,9 @@ export class SelectQuery<Model>
   extends Query<Model[], SelectQueryProps<Model>>
   implements ConditionalQuery<SelectQueryProps<Model>> {
 
-  where: (condition: AnyExpression) => this;
+  where: (condition: Expression<any, any>) => this;
 
+  /** @internal */
   constructor(schema: ObjectSchema<Model>) {
     super({
       schema: array().items(schema),
@@ -104,7 +105,7 @@ export class SelectQuery<Model>
 
   join<Model2, Id2 extends keyof Model2, Value>(
     table2: Table<Model2, Id2>,
-    condition: AnyExpression,
+    condition: Expression<any, any>,
   ): WrappedSelectQuery<Model>;
 
   join<Model2, Id2 extends keyof Model2>(
@@ -129,15 +130,15 @@ export class SelectQuery<Model>
     throw new Error('Invalid argument(s).');
   }
 
-  groupBy(...columns: AnyExpression[]) {
+  groupBy(...columns: Expression<any, any>[]) {
     return this.extend({ groupBys: this.props.groupBys ? this.props.groupBys.concat(columns) : columns });
   }
 
-  having(condition: AnyExpression) {
+  having(condition: Expression<any, any>) {
     return this.extend({ having: this.props.having ? this.props.having.and(condition) : condition });
   }
 
-  orderBy(column: AnyExpression, direction: 'asc' | 'desc' = 'asc') {
+  orderBy(column: Expression<any, any>, direction: 'asc' | 'desc' = 'asc') {
     const orderBy = { column, direction };
     return this.extend({ orderBys: this.props.orderBys ? this.props.orderBys.concat(orderBy) : [orderBy] });
   }
@@ -325,6 +326,7 @@ export class SelectQuery<Model>
     });
   }
 
+  /** @internal */
   executeQuery(query: QueryInterface): QueryBuilder {
     const {
       from,

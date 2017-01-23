@@ -10,10 +10,13 @@ export type QueryProps<Value> = {
 
 export abstract class Query<Value, Props extends QueryProps<Value>> implements Extendable<Props> {
 
+  /** @internal */
   readonly props: Props;
 
+  /** @internal */
   extend: (props: Partial<Props>) => this;
 
+  /** @internal */
   constructor(props: Props) {
     this.props = props;
   }
@@ -27,6 +30,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
     return this.executeQuery(query).toSQL();
   }
 
+  /** @internal */
   protected abstract executeQuery(qb: QueryInterface): QueryBuilder;
 
 }

@@ -30,6 +30,7 @@ function getBindings<Type>(value: Value<Type>) {
   }
 }
 
+/** @internal */
 export function equals<T>(lhs: Value<T>, rhs: Value<T>) {
   return new Expression<boolean, any>(
     `${getExpression(lhs)} = ${getExpression(rhs)}`,
@@ -40,6 +41,7 @@ export function equals<T>(lhs: Value<T>, rhs: Value<T>) {
 
 export class Expression<OutputType, Field extends string> {
 
+  /** @internal */
   constructor(
     public readonly expression: string,
     public readonly bindings: any[],
@@ -219,5 +221,3 @@ export class Expression<OutputType, Field extends string> {
   }
 
 }
-
-export type AnyExpression = Expression<any, string>;

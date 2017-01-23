@@ -2,6 +2,7 @@ import { Schema, ObjectSchema } from 'sukima';
 
 import { Expression } from './expression';
 
+/** @internal */
 export class ColumnBinding {
 
   constructor(

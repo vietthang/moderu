@@ -12,16 +12,19 @@ export type DeleteProps = QueryProps<number> & ConditionalQueryProps;
 
 export class DeleteQuery<Model> extends Query<number, DeleteProps> implements ConditionalQuery<DeleteProps> {
 
+  /** @internal */
   private static schema = integer().minimum(0);
 
   where: (condition: Expression<any, any>) => this;
 
+  /** @internal */
   constructor(
     private tableMeta: TableMeta<Model, any>,
   ) {
     super({ schema: DeleteQuery.schema });
   }
 
+  /** @internal */
   protected executeQuery(qb: QueryInterface): QueryBuilder {
     const builder = qb.table(this.tableMeta.name).del();
 
