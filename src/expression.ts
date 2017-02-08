@@ -26,7 +26,7 @@ function getBindings<Type>(value: Value<Type>) {
   if (value instanceof Expression) {
     return value.bindings;
   } else {
-    return [];
+    return [value];
   }
 }
 
@@ -116,25 +116,25 @@ export class Expression<OutputType, Field extends string> {
 
   between(lowerBound: Value<OutputType>, upperBound: Value<OutputType>) {
     const expression = `${this.sql} BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
-    const bindings = this.bindings.concat(lowerBound, upperBound);
+    const bindings = this.bindings.concat(getBindings(lowerBound), getBindings(upperBound));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notBetween(lowerBound: number, upperBound: number) {
     const expression = `${this.sql} NOT BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
-    const bindings = this.bindings.concat(lowerBound, upperBound);
+    const bindings = this.bindings.concat(getBindings(lowerBound), getBindings(upperBound));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   in(values: Value<OutputType>[]) {
     const expression = `${this.sql} IN (${values.map(getExpression).join(',')})}`;
-    const bindings = this.bindings.concat(values);
+    const bindings = this.bindings.concat(values.map(getBindings));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notIn(values: Value<OutputType>[]) {
     const expression = `${this.sql} NOT IN (${values.map(getExpression).join(',')})}`;
-    const bindings = this.bindings.concat(values);
+    const bindings = this.bindings.concat(values.map(getBindings));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
