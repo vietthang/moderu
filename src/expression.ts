@@ -16,7 +16,7 @@ export type Value<Type> = Type | Expression<Type, string>;
 
 function getExpression<Type>(value: Value<Type>) {
   if (value instanceof Expression) {
-    return value.expression;
+    return value.sql;
   } else {
     return '?';
   }
@@ -50,7 +50,7 @@ export class Expression<OutputType, Field extends string> {
 
   /** @internal */
   constructor(
-    public readonly expression: string,
+    public readonly sql: string,
     public readonly bindings: any[],
     public readonly schema: Schema<OutputType>,
     public readonly alias?: Field,
@@ -60,7 +60,7 @@ export class Expression<OutputType, Field extends string> {
 
   distinct() {
     return new Expression<OutputType, Field>(
-      `DISTINCT(${this.expression})`,
+      `DISTINCT(${this.sql})`,
       this.bindings,
       this.schema,
       this.alias,
@@ -69,7 +69,7 @@ export class Expression<OutputType, Field extends string> {
 
   as<Field2 extends string>(alias: Field2) {
     return new Expression<OutputType, Field2>(
-      this.expression,
+      this.sql,
       this.bindings,
       this.schema,
       alias,
@@ -77,8 +77,8 @@ export class Expression<OutputType, Field extends string> {
   }
 
   is<Type>(operator: string, value: Value<Type>) {
-    const expression = `${this.expression} ${operator} ${getExpression(value)}`;
-    const bindings = this.bindings.concat(value);
+    const expression = `${this.sql} ${operator} ${getExpression(value)}`;
+    const bindings = this.bindings.concat(getBindings(value));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
@@ -115,40 +115,40 @@ export class Expression<OutputType, Field extends string> {
   }
 
   between(lowerBound: Value<OutputType>, upperBound: Value<OutputType>) {
-    const expression = `${this.expression} BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
+    const expression = `${this.sql} BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
     const bindings = this.bindings.concat(lowerBound, upperBound);
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notBetween(lowerBound: number, upperBound: number) {
-    const expression = `${this.expression} NOT BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
+    const expression = `${this.sql} NOT BETWEEN ${getExpression(lowerBound)} AND ${getExpression(upperBound)}`;
     const bindings = this.bindings.concat(lowerBound, upperBound);
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   in(values: Value<OutputType>[]) {
-    const expression = `${this.expression} IN (${values.map(getExpression).join(',')})}`;
+    const expression = `${this.sql} IN (${values.map(getExpression).join(',')})}`;
     const bindings = this.bindings.concat(values);
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notIn(values: Value<OutputType>[]) {
-    const expression = `${this.expression} NOT IN (${values.map(getExpression).join(',')})}`;
+    const expression = `${this.sql} NOT IN (${values.map(getExpression).join(',')})}`;
     const bindings = this.bindings.concat(values);
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   isNull() {
-    return new Expression<boolean, any>(`${this.expression} IS NULL`, this.bindings, conditionSchema);
+    return new Expression<boolean, any>(`${this.sql} IS NULL`, this.bindings, conditionSchema);
   }
 
   isNotNull() {
-    return new Expression(`${this.expression} IS NOT NULL`, this.bindings, conditionSchema);
+    return new Expression(`${this.sql} IS NOT NULL`, this.bindings, conditionSchema);
   }
 
   withSchema<T>(schema: Schema<T>) {
     return new Expression<T, Field>(
-      this.expression,
+      this.sql,
       this.bindings,
       schema,
       this.alias,
@@ -157,7 +157,7 @@ export class Expression<OutputType, Field extends string> {
 
   sum() {
     return new Expression<number | null, 'sum'>(
-      `SUM(${this.expression})`,
+      `SUM(${this.sql})`,
       this.bindings,
       sumSchema,
       'sum',
@@ -166,7 +166,7 @@ export class Expression<OutputType, Field extends string> {
 
   avg() {
     return new Expression<number | null, 'avg'>(
-      `AVG(${this.expression})`,
+      `AVG(${this.sql})`,
       this.bindings,
       avgSchema,
       'avg',
@@ -175,7 +175,7 @@ export class Expression<OutputType, Field extends string> {
 
   min() {
     return new Expression<number | null, 'min'>(
-      `MIN(${this.expression})`,
+      `MIN(${this.sql})`,
       this.bindings,
       minSchema,
       'min',
@@ -184,7 +184,7 @@ export class Expression<OutputType, Field extends string> {
 
   max() {
     return new Expression<number | null, 'max'>(
-      `MAX(${this.expression})`,
+      `MAX(${this.sql})`,
       this.bindings,
       maxSchema,
       'max',
@@ -193,7 +193,7 @@ export class Expression<OutputType, Field extends string> {
 
   count() {
     return new Expression<number | null, 'count'>(
-      `COUNT(${this.expression})`,
+      `COUNT(${this.sql})`,
       this.bindings,
       countSchema,
       'count',
@@ -202,7 +202,7 @@ export class Expression<OutputType, Field extends string> {
 
   not() {
     return new Expression<boolean, 'not'>(
-      `NOT (${this.expression})`,
+      `NOT (${this.sql})`,
       this.bindings,
       conditionSchema,
       'not',
@@ -211,7 +211,7 @@ export class Expression<OutputType, Field extends string> {
 
   and(condition: Expression<any, any>) {
     return new Expression<boolean, 'and'>(
-      `${this.expression} AND (${condition.expression})`,
+      `${this.sql} AND (${condition.sql})`,
       this.bindings.concat(condition.bindings),
       conditionSchema,
       'and',
@@ -220,7 +220,7 @@ export class Expression<OutputType, Field extends string> {
 
   or(condition: Expression<any, any>) {
     return new Expression<boolean, 'or'>(
-      `${this.expression} OR (${condition.expression})`,
+      `${this.sql} OR (${condition.sql})`,
       this.bindings.concat(condition.bindings),
       conditionSchema,
       'or',

@@ -15,7 +15,20 @@ export type UpdateQueryProps<Model> =
   QueryProps<number> &
   ModificationQueryProps<Model> &
   ConditionalQueryProps & {
+
   tableName: string;
+
+  readonly beforeUpdate?: (
+    model: ModificationModel<Model>,
+    condition: Expression<any, any> | undefined,
+  ) => Promise<ModificationModel<Model>>;
+
+  readonly afterUpdate?: (
+    model: ModificationModel<Model>,
+    condition: Expression<any, any> | undefined,
+    updatedCount: number,
+  ) => Promise<void>;
+
 };
 
 export class UpdateQuery<Model>
@@ -45,12 +58,18 @@ export class UpdateQuery<Model>
       schema: UpdateQuery.schema,
       inputSchema: tableMeta.schema.getPartialSchema(),
       tableName: tableMeta.name,
+      beforeUpdate: tableMeta.beforeUpdate,
+      afterUpdate: tableMeta.afterUpdate,
     });
   }
 
   /** @internal */
-  protected executeQuery(query: QueryInterface): QueryBuilder {
-    const { where, model, tableName } = this.props;
+  protected buildQuery(query: QueryInterface): QueryBuilder {
+    const { where, model, tableName, beforeUpdate } = this.props;
+
+    if (beforeUpdate) {
+      beforeUpdate(model as any, where);
+    }
 
     if (!model) {
       throw new Error('Update without any model.');
@@ -58,7 +77,7 @@ export class UpdateQuery<Model>
 
     const rawModel = mapValues(model, (value, key) => {
       if (value instanceof Expression) {
-        return makeKnexRaw(query, value.expression, value.bindings, false);
+        return makeKnexRaw(query, value.sql, value.bindings, false);
       } else {
         return value;
       }
@@ -67,9 +86,17 @@ export class UpdateQuery<Model>
     const builder = query.table(tableName).update(rawModel);
 
     if (where) {
-      return builder.where(makeKnexRaw(query, where.expression, where.bindings, false));
+      return builder.where(makeKnexRaw(query, where.sql, where.bindings, false));
     } else {
       return builder;
+    }
+  }
+
+  protected async afterQuery(output: number) {
+    const { afterUpdate, model, where } = this.props;
+
+    if (afterUpdate) {
+      afterUpdate(model as any, where, output);
     }
   }
 

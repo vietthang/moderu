@@ -22,16 +22,21 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   }
 
   async execute(query: QueryInterface): Promise<Value> {
-    const ret = await (this.executeQuery(query) as Promise<any>);
-    return await validate(this.props.schema, ret, { convert: true });
+    const raw = await (this.buildQuery(query) as Promise<any>);
+    const output = await validate(this.props.schema, raw, { convert: true });
+    this.afterQuery(output);
+    return output;
   }
 
   toSQL(query: QueryInterface): any {
-    return this.executeQuery(query).toSQL();
+    return this.buildQuery(query).toSQL();
   }
 
   /** @internal */
-  protected abstract executeQuery(qb: QueryInterface): QueryBuilder;
+  protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
+
+  /** @internal */
+  protected abstract afterQuery(output: Value): Promise<void>;
 
 }
 

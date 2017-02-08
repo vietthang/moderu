@@ -92,7 +92,7 @@ export class SelectQuery<Model>
     ) as any as WrappedSelectQuery<Model>;
   }
 
-  from(from: DataSet<any> | WrappedSelectQuery<any>) {
+  from(from: Table<any, any> | WrappedSelectQuery<any>) {
     return this.extend({
       from,
     });
@@ -121,7 +121,7 @@ export class SelectQuery<Model>
         return this.extend({
           joins: (this.props.joins || []).concat({
             table: table2.$meta.name,
-            alias: table2.$meta.alias,
+            alias: table2.$meta.name,
             on: condition,
           }),
         });
@@ -328,7 +328,7 @@ export class SelectQuery<Model>
   }
 
   /** @internal */
-  executeQuery(query: QueryInterface): QueryBuilder {
+  buildQuery(query: QueryInterface): QueryBuilder {
     const {
       from,
       columns,
@@ -347,13 +347,13 @@ export class SelectQuery<Model>
       if (from instanceof SelectQuery) {
         qb = query.from((qb: QueryInterface) => {
           if (from.props.as) {
-            return from.executeQuery(qb).as(from.props.as);
+            return from.buildQuery(qb).as(from.props.as);
           } else {
-            return from.executeQuery(qb);
+            return from.buildQuery(qb);
           }
         });
       } else if (from.$meta) {
-        qb = query.from(from.$meta.name).as(from.$meta.alias);
+        qb = query.from(from.$meta.name);
       } else {
         throw new Error('Invalid from');
       }
@@ -366,7 +366,7 @@ export class SelectQuery<Model>
     } else {
       qb = columns.reduce(
         (qb, column) => qb.select(
-          makeKnexRaw(qb, `${column.expression} AS ??`, [...column.bindings, column.alias], true)),
+          makeKnexRaw(qb, `${column.sql} AS ??`, [...column.bindings, column.alias], true)),
         qb,
       );
     }
@@ -381,39 +381,43 @@ export class SelectQuery<Model>
 
     if (orderBys !== undefined && orderBys.length > 0) {
       qb = orderBys.reduce(
-       (qb, { column, direction }) => qb.orderByRaw(
-         makeKnexRaw(qb, `${column.expression} ${direction}`, column.bindings, true)
-       ),
-       qb,
+        (qb, { column, direction }) => qb.orderByRaw(
+          makeKnexRaw(qb, `${column.sql} ${direction}`, column.bindings, true)
+        ),
+        qb,
       );
     }
 
     if (groupBys !== undefined && groupBys.length > 0) {
       qb = groupBys.reduce(
-       (qb, column) => qb.groupBy(makeKnexRaw(qb, column.expression, column.bindings, true)),
+       (qb, column) => qb.groupBy(makeKnexRaw(qb, column.sql, column.bindings, true)),
        qb,
       );
     }
 
     if (where !== undefined) {
-      qb = qb.where(makeKnexRaw(qb, where.expression, where.bindings, true));
+      qb = qb.where(makeKnexRaw(qb, where.sql, where.bindings, true));
     }
 
     if (having !== undefined) {
-      qb = qb.having(makeKnexRaw(qb, having.expression, having.bindings, true));
+      qb = qb.having(makeKnexRaw(qb, having.sql, having.bindings, true));
     }
 
     if (joins !== undefined && joins.length > 0) {
       qb = joins.reduce(
-       (qb, join) => qb.join(
-         join.table,
-         (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.expression, join.on.bindings, true))
-       ),
-       qb,
+        (qb, join) => qb.join(
+          join.table,
+          (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+        ),
+        qb,
       );
     }
 
     return qb;
+  }
+
+  protected async afterQuery(output: any) {
+
   }
 
 }

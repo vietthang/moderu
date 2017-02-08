@@ -2,8 +2,7 @@ import { Schema } from 'sukima';
 
 import { Expression, Bindable } from './expression';
 
-/** @internal */
-export class ColumnBinding implements Bindable {
+class ColumnBinding implements Bindable {
 
   constructor(
     private readonly field: string,

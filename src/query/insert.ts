@@ -11,7 +11,13 @@ import { ModificationQuery, ModificationQueryProps, ValidationMode, Modification
 import { applyMixins } from '../utils/applyMixins';
 
 export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[Id]> & ModificationQueryProps<Model> & {
-  tableName: string;
+
+  readonly tableName: string;
+
+  readonly beforeInsert?: (model: ModificationModel<Model>) => Promise<ModificationModel<Model>>;
+
+  readonly afterInsert?: (model: ModificationModel<Model>, id: Model[Id]) => Promise<void>;
+
 };
 
 export class InsertQuery<Model, Id extends keyof Model>
@@ -38,7 +44,11 @@ export class InsertQuery<Model, Id extends keyof Model>
   }
 
   /** @internal */
-  protected executeQuery(query: QueryInterface): QueryBuilder {
+  protected buildQuery(query: QueryInterface): QueryBuilder {
+    if (this.props.beforeInsert) {
+      this.props.beforeInsert(this.props.model || {} as any);
+    }
+
     const { model, tableName } = this.props;
 
     if (!model) {
@@ -47,13 +57,19 @@ export class InsertQuery<Model, Id extends keyof Model>
 
     const rawModel = mapValues(model, (value, key) => {
       if (value instanceof Expression) {
-        return makeKnexRaw(query, value.expression, value.bindings, false);
+        return makeKnexRaw(query, value.sql, value.bindings, false);
       } else {
         return value;
       }
     });
 
     return query.table(tableName).insert(rawModel);
+  }
+
+  protected async afterQuery(id: Model[Id]) {
+    if (this.props.afterInsert) {
+      this.props.afterInsert(this.props.model || {} as any, id);
+    }
   }
 
 }

@@ -2,7 +2,7 @@ import 'mocha';
 import { assert } from 'chai';
 import { object, integer, string } from 'sukima';
 
-import { createTable } from '../../src/table';
+import { defineTable } from '../../src/table';
 import { Column } from '../../src/column';
 
 it('Should create table correctly', () => {
@@ -11,7 +11,7 @@ it('Should create table correctly', () => {
     name: string;
   }
 
-  const petTable = createTable(
+  const petTable = defineTable(
     'Pet',
     object({
       id: integer().minimum(0),
@@ -20,7 +20,6 @@ it('Should create table correctly', () => {
     'id',
   );
 
-  assert.equal(petTable.$meta.alias, 'Pet');
   assert.equal(petTable.$meta.idAttribute, 'id');
   assert.equal(petTable.$meta.name, 'Pet');
   assert.deepEqual(petTable.$meta.schema, object({

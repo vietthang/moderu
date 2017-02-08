@@ -3,11 +3,11 @@ import { assert } from 'chai';
 import { object, integer, string } from 'sukima';
 import Knex = require('knex');
 
-import { createTable } from '../../../src/table';
+import { defineTable } from '../../../src/table';
 import { UpdateQuery } from '../../../src/query/update';
 import { Expression } from '../../../src/expression';
 
-const petTable = createTable(
+const petTable = defineTable(
   'Pet',
   object({
     id: integer().minimum(0),
