@@ -50,10 +50,8 @@ export class SelectQuery<Model>
   where: (condition: Expression<any, any>) => this;
 
   /** @internal */
-  constructor(schema: ObjectSchema<Model>) {
-    super({
-      schema: array().items(schema),
-    });
+  constructor() {
+    super({ schema: array().items(object()) });
   }
 
   as(alias: string) {
@@ -151,6 +149,10 @@ export class SelectQuery<Model>
   offset(offset: number) {
     return this.extend({ offset });
   }
+
+  columns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2>;
+
+  columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], any> }): SelectQuery<Model & Mapping>;
 
   columns<
     Value0, Key0 extends string
@@ -278,20 +280,16 @@ export class SelectQuery<Model>
     & KeyValue<Value6, Key6>
   >;
 
-  columns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2>;
-
-  columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], P> }): SelectQuery<Model & Mapping>;
-
   columns(...columns: Expression<any, string>[]): SelectQuery<any>;
 
   columns(...columns: any[]): SelectQuery<any> {
     if (columns.length === 1) {
       const column = columns[0];
       if (column.$meta) {
+        const schema: ObjectSchema<any> = column.$meta.schema;
+
         return this.columns(
-          ...Object
-            .keys(column.$meta.schema.schema.properties)
-            .map(key => column[key])
+          ...schema.keys().map(key => column[key])
         );
       } else if (!(column instanceof Expression)) {
         return this.columns(
@@ -341,7 +339,7 @@ export class SelectQuery<Model>
       offset,
     } = this.props;
 
-    let qb;
+    let qb = query as QueryBuilder;
 
     if (from) {
       if (from instanceof SelectQuery) {
@@ -357,8 +355,6 @@ export class SelectQuery<Model>
       } else {
         throw new Error('Invalid from');
       }
-    } else {
-      throw new Error('No column');
     }
 
     if (!columns || columns.length === 0) {

@@ -1,5 +1,3 @@
-import { object } from 'sukima';
-
 import { Table } from './table';
 import { UpdateQuery } from './query/update';
 import { DeleteQuery } from './query/delete';
@@ -13,7 +11,7 @@ export function insert<Model, Id extends keyof Model>(
 }
 
 export function select() {
-  return new SelectQuery<{}>(object());
+  return new SelectQuery<{}>();
 }
 
 export function update<Model, Id extends keyof Model>(
@@ -27,3 +25,5 @@ export function del<Model, Id extends keyof Model>(
 ) {
   return new DeleteQuery<Model>(table.$meta);
 }
+
+export { defineTable } from './table';
