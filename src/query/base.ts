@@ -22,7 +22,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   }
 
   async execute(query: QueryInterface): Promise<Value> {
-    const raw = await (this.buildQuery(query) as Promise<any>);
+    const raw = await this.buildQuery(query);
     const output = await validate(this.props.schema, raw, { convert: true });
     this.afterQuery(output);
     return output;

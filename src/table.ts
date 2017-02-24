@@ -10,9 +10,14 @@ export interface TableMeta<Model, Id extends keyof Model> extends DataSetMeta<Mo
 
   readonly idAttribute: Id;
 
-  readonly beforeInsert?: (model: ModificationModel<Model>) => Promise<ModificationModel<Model>>;
+  readonly beforeInsert?: (
+    model: ModificationModel<Model>,
+  ) => Promise<ModificationModel<Model>>;
 
-  readonly afterInsert?: (model: ModificationModel<Model>, id: Id) => Promise<void>;
+  readonly afterInsert?: (
+    model: ModificationModel<Model>,
+    id: Id,
+  ) => Promise<void>;
 
   readonly beforeUpdate?: (
     model: ModificationModel<Model>,
@@ -25,9 +30,14 @@ export interface TableMeta<Model, Id extends keyof Model> extends DataSetMeta<Mo
     updatedCount: number,
   ) => Promise<void>;
 
-  readonly beforeDelete?: (condition: Expression<any, any> | undefined) => Promise<void>;
+  readonly beforeDelete?: (
+    condition: Expression<any, any> | undefined
+  ) => Promise<void>;
 
-  readonly afterDelete?: (condition: Expression<any, any> | undefined, deletedCount: number) => Promise<void>;
+  readonly afterDelete?: (
+    condition: Expression<any, any> | undefined,
+    deletedCount: number,
+  ) => Promise<void>;
 
 }
 
