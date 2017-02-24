@@ -14,6 +14,8 @@ export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[I
 
   readonly tableName: string;
 
+  readonly idAttribute: Id;
+
   readonly beforeInsert?: (model: ModificationModel<Model>) => Promise<ModificationModel<Model>>;
 
   readonly afterInsert?: (model: ModificationModel<Model>, id: Model[Id]) => Promise<void>;
@@ -40,6 +42,7 @@ export class InsertQuery<Model, Id extends keyof Model>
       validationMode: ValidationMode.SkipExpressions,
       inputSchema: tableMeta.schema.getPartialSchema(),
       tableName: tableMeta.name,
+      idAttribute: tableMeta.idAttribute,
     });
   }
 
@@ -49,7 +52,7 @@ export class InsertQuery<Model, Id extends keyof Model>
       this.props.beforeInsert(this.props.model || {} as any);
     }
 
-    const { model, tableName } = this.props;
+    const { model, tableName, idAttribute } = this.props;
 
     if (!model) {
       throw new Error('Insert without any model.');
@@ -63,7 +66,7 @@ export class InsertQuery<Model, Id extends keyof Model>
       }
     });
 
-    return query.table(tableName).insert(rawModel);
+    return query.table(tableName).insert(rawModel).returning(idAttribute);
   }
 
   protected async afterQuery(id: Model[Id]) {
