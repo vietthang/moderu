@@ -36,7 +36,7 @@
     "typescript": "^2.2.1"
   },
   "dependencies": {
-    "sukima": "^0.6.1"
+    "sukima": "^0.6.2"
   },
   "nyc": {
     "include": [
