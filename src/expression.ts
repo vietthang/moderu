@@ -1,5 +1,7 @@
 import { Schema, number, integer, boolean } from 'sukima';
 
+import { flatten } from './utils/flatten'
+
 const sumSchema = number().nullable();
 
 const avgSchema = number().nullable();
@@ -127,14 +129,14 @@ export class Expression<OutputType, Field extends string> {
   }
 
   in(values: Value<OutputType>[]) {
-    const expression = `${this.sql} IN (${values.map(getExpression).join(',')})}`;
-    const bindings = this.bindings.concat(values.map(getBindings));
+    const expression = `${this.sql} IN (${values.map(getExpression).join(',')})`;
+    const bindings = this.bindings.concat(flatten(values.map(getBindings)));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
   notIn(values: Value<OutputType>[]) {
-    const expression = `${this.sql} NOT IN (${values.map(getExpression).join(',')})}`;
-    const bindings = this.bindings.concat(values.map(getBindings));
+    const expression = `${this.sql} NOT IN (${values.map(getExpression).join(',')})`;
+    const bindings = this.bindings.concat(flatten(values.map(getBindings)));
     return new Expression<boolean, any>(expression, bindings, conditionSchema);
   }
 
