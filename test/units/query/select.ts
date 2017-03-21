@@ -75,3 +75,31 @@ it('Should generate correct query when chaining columns()', () => {
   assert.deepEqual(bindings, []);
   assert.equal('select "Pet"."id" AS "id", "Pet"."name" AS "name"', sql);
 });
+
+it('Should generate correct query when using limit', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query.columns(petTable.id).limit(10).toSQL(knex);
+  assert.deepEqual(bindings, [10]);
+  assert.equal('select "Pet"."id" AS "id" limit ?', sql);
+});
+
+it('Should generate correct query when using offset without limit', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query.columns(petTable.id).offset(10).toSQL(knex);
+  assert.deepEqual(bindings, [-1, 10]);
+  assert.equal('select "Pet"."id" AS "id" limit ? offset ?', sql);
+});
+
+it('Should generate correct query when using offset with limit', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query.columns(petTable.id).limit(10).offset(10).toSQL(knex);
+  assert.deepEqual(bindings, [10, 10]);
+  assert.equal('select "Pet"."id" AS "id" limit ? offset ?', sql);
+});
+
+it('Should generate correct query when using order', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query.columns(petTable.name).orderBy(petTable.id, 'desc').toSQL(knex);
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" order by "Pet"."id" desc', sql);
+});
