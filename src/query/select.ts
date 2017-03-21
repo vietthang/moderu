@@ -150,9 +150,21 @@ export class SelectQuery<Model>
     return this.extend({ offset });
   }
 
-  columns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2>;
+  tableColumns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2> {
+    const schema: ObjectSchema<any> = table.$meta.schema;
 
-  columns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], any> }): SelectQuery<Model & Mapping>;
+    return this.columns(
+      ...schema.keys().map(key => table[key])
+    );
+  }
+
+  mappedColumns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], any> }): SelectQuery<Model & Mapping> {
+    return this.columns(
+      ...Object
+        .keys(mapping)
+        .map(key => mapping[key].as(key))
+    );
+  }
 
   columns<
     Value0, Key0 extends string
@@ -283,23 +295,6 @@ export class SelectQuery<Model>
   columns(...columns: Expression<any, string>[]): SelectQuery<any>;
 
   columns(...columns: any[]): SelectQuery<any> {
-    if (columns.length === 1) {
-      const column = columns[0];
-      if (column.$meta) {
-        const schema: ObjectSchema<any> = column.$meta.schema;
-
-        return this.columns(
-          ...schema.keys().map(key => column[key])
-        );
-      } else if (!(column instanceof Expression)) {
-        return this.columns(
-          ...Object
-            .keys(column)
-            .map(key => column[key].as(key))
-        );
-      }
-    }
-
     const expressions: Expression<any, string>[] = columns;
 
     const newColumns = this.props.columns ? this.props.columns.concat(expressions) : expressions;

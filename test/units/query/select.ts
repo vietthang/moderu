@@ -65,14 +65,14 @@ it('Should generate correct query with some columns', () => {
 
 it('Should generate correct query when pick whole table', () => {
   const query = new SelectQuery();
-  const { sql, bindings } = query.columns(petTable).toSQL(knex);
+  const { sql, bindings } = query.tableColumns(petTable).toSQL(knex);
   assert.deepEqual(bindings, []);
   assert.equal('select "Pet"."id" AS "id", "Pet"."name" AS "name", "Pet"."updated" AS "updated", "Pet"."ownerId" AS "ownerId"', sql);
 });
 
 it('Should generate correct query when using mapping', () => {
   const query = new SelectQuery();
-  const { sql, bindings } = query.columns({
+  const { sql, bindings } = query.mappedColumns({
     id2: petTable.id,
     name2: petTable.name,
   }).toSQL(knex);
