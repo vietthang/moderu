@@ -14,6 +14,17 @@ const petTable = defineTable(
     id: integer().minimum(0),
     name: string(),
     updated: integer().minimum(0),
+    ownerId: integer().minimum(0),
+  }),
+  'id',
+);
+
+const userTable = defineTable(
+  'User',
+  object({
+    id: integer().minimum(0),
+    name: string(),
+    updated: integer().minimum(0),
   }),
   'id',
 );
@@ -56,7 +67,7 @@ it('Should generate correct query when pick whole table', () => {
   const query = new SelectQuery();
   const { sql, bindings } = query.columns(petTable).toSQL(knex);
   assert.deepEqual(bindings, []);
-  assert.equal('select "Pet"."id" AS "id", "Pet"."name" AS "name", "Pet"."updated" AS "updated"', sql);
+  assert.equal('select "Pet"."id" AS "id", "Pet"."name" AS "name", "Pet"."updated" AS "updated", "Pet"."ownerId" AS "ownerId"', sql);
 });
 
 it('Should generate correct query when using mapping', () => {
@@ -102,4 +113,67 @@ it('Should generate correct query when using order', () => {
   const { sql, bindings } = query.columns(petTable.name).orderBy(petTable.id, 'desc').toSQL(knex);
   assert.deepEqual(bindings, []);
   assert.equal('select "Pet"."name" AS "name" order by "Pet"."id" desc', sql);
+});
+
+it('Should generate correct query when using join', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .join(userTable, petTable.ownerId, userTable.id)
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" from "Pet" inner join "User" on "Pet"."ownerId" = "User"."id"', sql);
+});
+
+it('Should generate correct query when using groupBy', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .groupBy(petTable.ownerId)
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" from "Pet" group by "Pet"."ownerId"', sql);
+});
+
+it('Should generate correct query when using where', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .where(petTable.name.like('Pluto'))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, ['Pluto']);
+  assert.equal('select "Pet"."name" AS "name" where "Pet"."name" LIKE ?', sql);
+});
+
+it('Should generate correct query when using having', () => {
+  const timestamp = new Date(2017, 1, 1).getTime()
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .having(petTable.updated.max().greaterThan(timestamp))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, [timestamp]);
+  assert.equal('select "Pet"."name" AS "name" having MAX("Pet"."updated") > ?', sql);
+});
+
+it('Should generate correct query when using sub query', () => {
+  const query = new SelectQuery();
+  const subQuery = query
+    .columns(userTable.name.as('userName'), userTable.updated.as('userUpdated'))
+    .from(userTable)
+    .as('Owner')
+
+  const { sql, bindings } = query
+    .columns(subQuery.userName)
+    .from(subQuery)
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Owner"."userName" AS "userName" from (select "User"."name" AS "userName", "User"."updated" AS "userUpdated" from "User") as "Owner"', sql);
 });
