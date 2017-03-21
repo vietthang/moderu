@@ -31,7 +31,6 @@ class TestClass implements Extendable<TestProps> {
 
 applyMixins(TestClass, Extendable);
 
-
 it('Should extend with new property correctly', () => {
   const source = new TestClass({
     foo: 'string',

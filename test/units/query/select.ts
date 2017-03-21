@@ -67,7 +67,10 @@ it('Should generate correct query when pick whole table', () => {
   const query = new SelectQuery();
   const { sql, bindings } = query.tableColumns(petTable).toSQL(knex);
   assert.deepEqual(bindings, []);
-  assert.equal('select "Pet"."id" AS "id", "Pet"."name" AS "name", "Pet"."updated" AS "updated", "Pet"."ownerId" AS "ownerId"', sql);
+  assert.equal(
+    `select "Pet"."id" AS "id", "Pet"."name" AS "name", "Pet"."updated" AS "updated", "Pet"."ownerId" AS "ownerId"`,
+    sql,
+  );
 });
 
 it('Should generate correct query when using mapping', () => {
@@ -151,7 +154,7 @@ it('Should generate correct query when using where', () => {
 });
 
 it('Should generate correct query when using having', () => {
-  const timestamp = new Date(2017, 1, 1).getTime()
+  const timestamp = new Date(2017, 1, 1).getTime();
   const query = new SelectQuery();
   const { sql, bindings } = query
     .columns(petTable.name)
@@ -167,7 +170,7 @@ it('Should generate correct query when using sub query', () => {
   const subQuery = query
     .columns(userTable.name.as('userName'), userTable.updated.as('userUpdated'))
     .from(userTable)
-    .as('Owner')
+    .as('Owner');
 
   const { sql, bindings } = query
     .columns(subQuery.userName)
@@ -175,5 +178,9 @@ it('Should generate correct query when using sub query', () => {
     .toSQL(knex);
 
   assert.deepEqual(bindings, []);
-  assert.equal('select "Owner"."userName" AS "userName" from (select "User"."name" AS "userName", "User"."updated" AS "userUpdated" from "User") as "Owner"', sql);
+  assert.equal(
+    // tslint:disable-next-line:max-line-length
+    `select "Owner"."userName" AS "userName" from (select "User"."name" AS "userName", "User"."updated" AS "userUpdated" from "User") as "Owner"`,
+    sql,
+  );
 });

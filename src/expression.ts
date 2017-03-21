@@ -1,6 +1,6 @@
 import { Schema, number, integer, boolean } from 'sukima';
 
-import { flatten } from './utils/flatten'
+import { flatten } from './utils/flatten';
 
 const sumSchema = number().nullable();
 

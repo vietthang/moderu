@@ -4,7 +4,7 @@ import { integer, string, number } from 'sukima';
 import Knex = require('knex');
 
 import { Expression, equals } from '../../src/expression';
-import { makeKnexRaw } from '../../src/utils/makeKnexRaw'
+import { makeKnexRaw } from '../../src/utils/makeKnexRaw';
 
 const knex = Knex({
   client: 'sqlite3',
