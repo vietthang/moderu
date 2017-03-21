@@ -13,7 +13,7 @@ export class ConditionalQuery<Props extends ConditionalQueryProps> implements Ex
   readonly props: Props;
 
   /** @internal */
-  extend: (props: Partial<Props>) => this;
+  extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this;
 
   where(condition: Expression<any, any>) {
     return this.extend({

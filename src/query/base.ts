@@ -14,7 +14,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   readonly props: Props;
 
   /** @internal */
-  extend: (props: Partial<Props>) => this;
+  extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this;
 
   /** @internal */
   constructor(props: Props) {
@@ -23,9 +23,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
 
   async execute(query: QueryInterface): Promise<Value> {
     const raw = await this.buildQuery(query);
-    const output = await validate(this.props.schema, raw, { convert: true });
-    this.afterQuery(output);
-    return output;
+    return await validate(this.props.schema, raw, { convert: true });
   }
 
   toSQL(query: QueryInterface): any {
@@ -34,9 +32,6 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
 
   /** @internal */
   protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
-
-  /** @internal */
-  protected abstract afterQuery(output: Value): Promise<void>;
 
 }
 

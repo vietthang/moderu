@@ -412,10 +412,6 @@ export class SelectQuery<Model>
     return qb;
   }
 
-  protected async afterQuery(output: any) {
-
-  }
-
 }
 
 applyMixins(SelectQuery, ConditionalQuery);

@@ -16,10 +16,6 @@ export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[I
 
   readonly idAttribute: Id;
 
-  readonly beforeInsert?: (model: ModificationModel<Model>) => Promise<ModificationModel<Model>>;
-
-  readonly afterInsert?: (model: ModificationModel<Model>, id: Model[Id]) => Promise<void>;
-
 };
 
 export class InsertQuery<Model, Id extends keyof Model>
@@ -48,10 +44,6 @@ export class InsertQuery<Model, Id extends keyof Model>
 
   /** @internal */
   protected buildQuery(query: QueryInterface): QueryBuilder {
-    if (this.props.beforeInsert) {
-      this.props.beforeInsert(this.props.model || {} as any);
-    }
-
     const { model, tableName, idAttribute } = this.props;
 
     if (!model) {
@@ -67,12 +59,6 @@ export class InsertQuery<Model, Id extends keyof Model>
     });
 
     return query.table(tableName).insert(rawModel).returning(idAttribute);
-  }
-
-  protected async afterQuery(id: Model[Id]) {
-    if (this.props.afterInsert) {
-      this.props.afterInsert(this.props.model || {} as any, id);
-    }
   }
 
 }

@@ -12,10 +12,6 @@ export type DeleteProps = QueryProps<number> & ConditionalQueryProps & {
 
   readonly tableName: string;
 
-  readonly beforeDelete?: (where: Expression<any, any> | undefined) => Promise<void>;
-
-  readonly afterDelete?: (where: Expression<any, any> | undefined, deletedCount: number) => Promise<void>;
-
 };
 
 export class DeleteQuery<Model> extends Query<number, DeleteProps> implements ConditionalQuery<DeleteProps> {
@@ -32,17 +28,11 @@ export class DeleteQuery<Model> extends Query<number, DeleteProps> implements Co
     super({
       tableName: tableMeta.name,
       schema: DeleteQuery.schema,
-      beforeDelete: tableMeta.beforeDelete,
-      afterDelete: tableMeta.afterDelete,
     });
   }
 
   /** @internal */
   protected buildQuery(qb: QueryInterface): QueryBuilder {
-    if (this.props.beforeDelete) {
-      this.props.beforeDelete(this.props.where);
-    }
-
     const builder = qb.table(this.props.tableName).del();
 
     const { where } = this.props;
@@ -51,12 +41,6 @@ export class DeleteQuery<Model> extends Query<number, DeleteProps> implements Co
       return builder.where(makeKnexRaw(qb, where.sql, where.bindings, false));
     } else {
       return builder;
-    }
-  }
-
-  protected async afterQuery(output: number) {
-    if (this.props.afterDelete) {
-      this.props.afterDelete(this.props.where, output);
     }
   }
 

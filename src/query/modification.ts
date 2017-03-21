@@ -69,12 +69,12 @@ export class ModificationQuery<Model, Props extends ModificationQueryProps<Model
   readonly props: Props;
 
   /** @internal */
-  extend: (props: Partial<Props>) => this;
+  extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this;
 
   validationMode(validationMode: ValidationMode) {
     return this.extend({
       validationMode,
-    } as any);
+    });
   }
 
   value(model: ModificationModel<Model>): this {
@@ -96,7 +96,7 @@ export class ModificationQuery<Model, Props extends ModificationQueryProps<Model
 
     return this.extend({
       model: finalModel,
-    } as any);
+    });
   }
 
   set<K extends keyof Model>(
