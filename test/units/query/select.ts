@@ -123,11 +123,119 @@ it('Should generate correct query when using join', () => {
   const { sql, bindings } = query
     .columns(petTable.name)
     .from(petTable)
-    .join(userTable, petTable.ownerId, userTable.id)
+    .join(userTable, petTable.ownerId.equals(userTable.id))
     .toSQL(knex);
 
   assert.deepEqual(bindings, []);
   assert.equal('select "Pet"."name" AS "name" from "Pet" inner join "User" on "Pet"."ownerId" = "User"."id"', sql);
+});
+
+it('Should generate correct query when using innerJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .innerJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" from "Pet" inner join "User" on "Pet"."ownerId" = "User"."id"', sql);
+});
+
+it('Should generate correct query when using leftJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .leftJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" from "Pet" left join "User" on "Pet"."ownerId" = "User"."id"', sql);
+});
+
+it('Should generate correct query when using leftOuterJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .leftOuterJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal(
+    'select "Pet"."name" AS "name" from "Pet" left outer join "User" on "Pet"."ownerId" = "User"."id"',
+    sql,
+  );
+});
+
+it('Should generate correct query when using rightJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .rightJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" from "Pet" right join "User" on "Pet"."ownerId" = "User"."id"', sql);
+});
+
+it('Should generate correct query when using rightOuterJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .rightOuterJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal(
+    'select "Pet"."name" AS "name" from "Pet" right outer join "User" on "Pet"."ownerId" = "User"."id"',
+    sql,
+  );
+});
+
+it('Should generate correct query when using outerJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .outerJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal('select "Pet"."name" AS "name" from "Pet" outer join "User" on "Pet"."ownerId" = "User"."id"', sql);
+});
+
+it('Should generate correct query when using fullOuterJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .fullOuterJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal(
+    'select "Pet"."name" AS "name" from "Pet" full outer join "User" on "Pet"."ownerId" = "User"."id"',
+    sql,
+  );
+});
+
+it('Should generate correct query when using crossJoin', () => {
+  const query = new SelectQuery();
+  const { sql, bindings } = query
+    .columns(petTable.name)
+    .from(petTable)
+    .crossJoin(userTable, petTable.ownerId.equals(userTable.id))
+    .toSQL(knex);
+
+  assert.deepEqual(bindings, []);
+  assert.equal(
+    'select "Pet"."name" AS "name" from "Pet" cross join "User" on "Pet"."ownerId" = "User"."id"',
+    sql,
+  );
 });
 
 it('Should generate correct query when using groupBy', () => {
@@ -183,4 +291,14 @@ it('Should generate correct query when using sub query', () => {
     `select "Owner"."userName" AS "userName" from (select "User"."name" AS "userName", "User"."updated" AS "userUpdated" from "User") as "Owner"`,
     sql,
   );
+});
+
+it('Should fail if select with an expression without alias', () => {
+  const query = new SelectQuery();
+  assert.throw(() => query.columns(petTable.name.equals('Awesome')));
+});
+
+it('Should fail if try to generate subQuery without any column', () => {
+  const query = new SelectQuery();
+  assert.throw(() => query.from(userTable).as('Owner'));
 });
