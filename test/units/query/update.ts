@@ -92,3 +92,12 @@ it('Should fail if set with invalid validation mode', () => {
   const query = new UpdateQuery(petTable.$meta).validationMode(4);
   assert.throw(() => query.set('updated', now));
 });
+
+it('Should generate correct update statement with where', () => {
+  const query = new UpdateQuery(petTable.$meta)
+    .value({ name: 'abc' })
+    .where(petTable.name.equals('Awesome'));
+  const { sql, bindings } = query.toSQL(knex);
+  assert.deepEqual(bindings, ['abc', 'Awesome']);
+  assert.equal(`update "Pet" set "name" = ? where "name" = ?`, sql);
+});
