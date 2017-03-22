@@ -5,7 +5,7 @@ import { QueryBuilder, QueryInterface, JoinClause } from 'knex';
 import { Query, QueryProps } from './base';
 import { makeKnexRaw } from '../utils/makeKnexRaw';
 import { ConditionalQuery, ConditionalQueryProps } from './conditional';
-import { Expression, equals } from '../expression';
+import { Expression } from '../expression';
 import { Table, DataSet } from '../table';
 import { Column } from '../column';
 import { applyMixins } from '../utils/applyMixins';
@@ -18,17 +18,21 @@ export type SelectOrderBy = {
   direction: SelectOrderByDirection;
 };
 
+export type SelectJoinType = 'inner' | 'left' | 'leftOuter' | 'right' | 'rightOuter' | 'outer' | 'fullOuter' | 'cross';
+
 export type SelectJoin = {
   table: string;
   alias?: string;
   on: Expression<any, any>;
+  type: SelectJoinType;
 };
 
 export type SelectQueryProps<Model> =
   QueryProps<Model[]> &
   ConditionalQueryProps &
   {
-    from?: WrappedSelectQuery<Model> | Table<Model, any>;
+    fromQuery?: WrappedSelectQuery<Model>;
+    fromTable?: Table<Model, any>;
     columns?: Expression<any, string>[];
     orderBys?: SelectOrderBy[];
     groupBys?: Expression<any, string>[];
@@ -91,42 +95,88 @@ export class SelectQuery<Model>
   }
 
   from(from: Table<any, any> | WrappedSelectQuery<any>) {
-    return this.extend({
-      from,
-    });
+    if (from instanceof SelectQuery) {
+      return this.extend({
+        fromQuery: from as WrappedSelectQuery<any>,
+        fromTable: undefined,
+      });
+    } else {
+      return this.extend({
+        fromQuery: undefined,
+        fromTable: from,
+      });
+    }
   }
-
-  join<Model2, Id2 extends keyof Model2, Value>(
-    table2: Table<Model2, Id2>,
-    sourceColumn: Expression<Value, string>,
-    targetColumn: Expression<Value, string>,
-  ): WrappedSelectQuery<Model>;
-
-  join<Model2, Id2 extends keyof Model2, Value>(
-    table2: Table<Model2, Id2>,
-    condition: Expression<any, any>,
-  ): WrappedSelectQuery<Model>;
 
   join<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
-    ...args: any[],
+    condition: Expression<any, any>,
+    type: SelectJoinType = 'inner',
   ) {
-    if (args.length === 2) {
-      return this.join(table2, equals(args[0], args[1]));
-    } else if (args.length === 1) {
-      const condition = args[0];
-      if (condition instanceof Expression) {
-        return this.extend({
-          joins: (this.props.joins || []).concat({
-            table: table2.$meta.name,
-            alias: table2.$meta.name,
-            on: condition,
-          }),
-        });
-      }
-    }
+    return this.extend({
+      joins: (this.props.joins || []).concat({
+        table: table2.$meta.name,
+        alias: table2.$meta.name,
+        on: condition,
+        type,
+      }),
+    });
+  }
 
-    throw new Error('Invalid argument(s).');
+  innerJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'inner');
+  }
+
+  leftJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'left');
+  }
+
+  leftOuterJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'leftOuter');
+  }
+
+  rightJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'right');
+  }
+
+  rightOuterJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'rightOuter');
+  }
+
+  outerJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'outer');
+  }
+
+  fullOuterJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'fullOuter');
+  }
+
+  crossJoin<Model2, Id2 extends keyof Model2>(
+    table2: Table<Model2, Id2>,
+    condition: Expression<any, any>,
+  ) {
+    return this.join(table2, condition, 'cross');
   }
 
   groupBy(...columns: Expression<any, any>[]) {
@@ -300,16 +350,13 @@ export class SelectQuery<Model>
     const newColumns = this.props.columns ? this.props.columns.concat(expressions) : expressions;
 
     const schema = newColumns.reduce<ObjectSchema<any>>(
-      (schema: ObjectSchema<any>, column) => {
-        if (!(column instanceof Expression)) {
-          throw new Error('Input argument is not Column object.');
-        }
+      (schema: ObjectSchema<any>, expression) => {
 
-        if (column.alias === undefined) {
+        if (expression.alias === undefined) {
           throw new Error('Column does not has alias');
         }
 
-        return schema.addProperty(column.alias, column.schema);
+        return schema.addProperty(expression.alias, expression.schema);
       },
       object().additionalProperties(false) as ObjectSchema<any>,
     );
@@ -323,7 +370,8 @@ export class SelectQuery<Model>
   /** @internal */
   buildQuery(query: QueryInterface): QueryBuilder {
     const {
-      from,
+      fromQuery,
+      fromTable,
       columns,
       orderBys,
       groupBys,
@@ -336,28 +384,25 @@ export class SelectQuery<Model>
 
     let qb = query as QueryBuilder;
 
-    if (from) {
-      if (from instanceof SelectQuery) {
-        qb = query.from((qb: QueryInterface) => {
-          if (from.props.as) {
-            return from.buildQuery(qb).as(from.props.as);
-          } else {
-            return from.buildQuery(qb);
-          }
-        });
-      } else if (from.$meta) {
-        qb = query.from(from.$meta.name);
-      } else {
-        throw new Error('Invalid from');
-      }
+    if (fromQuery) {
+      qb = query.from((qb: QueryInterface) => {
+        if (fromQuery.props.as) {
+          return fromQuery.buildQuery(qb).as(fromQuery.props.as);
+        } else {
+          return fromQuery.buildQuery(qb);
+        }
+      });
     }
 
-    if (!columns || columns.length === 0) {
-      throw new Error('No columns to query.');
-    } else {
+    if (fromTable) {
+      qb = query.from(fromTable.$meta.name);
+    }
+
+    if (columns) {
       qb = columns.reduce(
         (qb, column) => qb.select(
-          makeKnexRaw(qb, `${column.sql} AS ??`, [...column.bindings, column.alias], true)),
+          makeKnexRaw(qb, `${column.sql} AS ??`, [...column.bindings, column.alias], true)
+        ),
         qb,
       );
     }
@@ -396,10 +441,52 @@ export class SelectQuery<Model>
 
     if (joins !== undefined && joins.length > 0) {
       qb = joins.reduce(
-        (qb, join) => qb.join(
-          join.table,
-          (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
-        ),
+        (qb, join) => {
+          switch (join.type) {
+            case 'inner':
+              return qb.innerJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'left':
+              return qb.leftJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'leftOuter':
+              return qb.leftOuterJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'right':
+              return qb.rightJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'rightOuter':
+              return qb.rightOuterJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'outer':
+              return qb.outerJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'fullOuter':
+              return qb.fullOuterJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            case 'cross':
+              return qb.crossJoin(
+                join.table,
+                (q: JoinClause) => q.on(makeKnexRaw(qb, join.on.sql, join.on.bindings, true))
+              );
+            default:
+              throw new Error('Invalid join type');
+          }
+        },
         qb,
       );
     }
