@@ -1,5 +1,5 @@
 /** @internal */
-export function mapValues<T, K extends keyof T>(
+export function mapValues<T, K extends keyof T> (
   source: T,
   functor: (value: T[K], key: K) => any,
 ): any {
@@ -11,8 +11,8 @@ export function mapValues<T, K extends keyof T>(
         return {
           ...prevValue,
           [key as any]: value,
-        };
+        }
       },
       {} as any,
-    );
+    )
 }

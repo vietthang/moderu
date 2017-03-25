@@ -1,14 +1,14 @@
-import 'mocha';
-import { assert } from 'chai';
-import { integer, string } from 'sukima';
+import 'mocha'
+import { assert } from 'chai'
+import { integer, string } from 'sukima'
 
-import { defineTable } from '../../src/table';
-import { Column } from '../../src/column';
+import { defineTable } from '../../src/table'
+import { Column } from '../../src/column'
 
 it('Should create table correctly', () => {
   interface Pet {
-    id: number;
-    name: string;
+    id: number
+    name: string
   }
 
   const petTable = defineTable(
@@ -18,15 +18,15 @@ it('Should create table correctly', () => {
       name: string(),
     },
     'id',
-  );
+  )
 
-  assert.equal(petTable.$meta.idAttribute, 'id');
-  assert.equal(petTable.$meta.name, 'Pet');
+  assert.equal(petTable.$meta.idAttribute, 'id')
+  assert.equal(petTable.$meta.name, 'Pet')
   assert.deepEqual(petTable.$meta.schema, {
     id: integer().minimum(0),
     name: string(),
-  });
+  })
 
-  assert.deepEqual(petTable.id, new Column<Pet, 'id'>(integer().minimum(0), 'id', 'Pet'));
-  assert.deepEqual(petTable.name, new Column<Pet, 'name'>(string(), 'name', 'Pet'));
-});
+  assert.deepEqual(petTable.id, new Column<Pet, 'id'>(integer().minimum(0), 'id', 'Pet'))
+  assert.deepEqual(petTable.name, new Column<Pet, 'name'>(string(), 'name', 'Pet'))
+})
