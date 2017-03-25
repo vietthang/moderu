@@ -1,16 +1,16 @@
-import { Schema, number, integer, boolean } from 'sukima';
+import { Schema, number, integer, boolean, nullable } from 'sukima';
 
 import { flatten } from './utils/flatten';
 
-const sumSchema = number().nullable();
+const sumSchema = nullable(number());
 
-const avgSchema = number().nullable();
+const avgSchema = nullable(number());
 
-const minSchema = number().nullable();
+const minSchema = nullable(number());
 
-const maxSchema = number().nullable();
+const maxSchema = nullable(number());
 
-const countSchema = integer().minimum(0).nullable();
+const countSchema = nullable(integer().minimum(0));
 
 const conditionSchema = boolean();
 
@@ -40,7 +40,7 @@ export interface Bindable {
 }
 
 /** @internal */
-export function equals<T>(lhs: Value<T>, rhs: Value<T>) {
+export function equals(lhs: Value<any>, rhs: Value<any>) {
   return new Expression<boolean, any>(
     `${getExpression(lhs)} = ${getExpression(rhs)}`,
     [...getBindings(lhs), ...getBindings(rhs)],
@@ -228,5 +228,9 @@ export class Expression<OutputType, Field extends string> {
       'or',
     );
   }
+
+}
+
+export class E<T> extends Expression<T, string> {
 
 }

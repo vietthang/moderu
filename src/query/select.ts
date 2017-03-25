@@ -1,5 +1,4 @@
 import { array, object } from 'sukima';
-import { ObjectSchema } from 'sukima/schemas/object';
 import { QueryBuilder, QueryInterface, JoinClause } from 'knex';
 
 import { Query, QueryProps } from './base';
@@ -55,7 +54,7 @@ export class SelectQuery<Model>
 
   /** @internal */
   constructor() {
-    super({ schema: array().items(object()) });
+    super({ schema: array().items(object()) as any });
   }
 
   as(alias: string) {
@@ -347,21 +346,25 @@ export class SelectQuery<Model>
 
     const newColumns = this.props.columns ? this.props.columns.concat(expressions) : expressions;
 
-    const schema = newColumns.reduce<ObjectSchema<any>>(
-      (schema: ObjectSchema<any>, expression) => {
-
+    const propertyMap: object = newColumns.reduce(
+      (properties, expression) => {
         if (expression.alias === undefined) {
           throw new Error('Column does not has alias');
         }
 
-        return schema.addProperty(expression.alias, expression.schema);
+        return {
+          ...properties,
+          [expression.alias]: expression.schema,
+        };
       },
-      object().additionalProperties(false) as ObjectSchema<any>,
+      {},
     );
+
+    const schema = object(propertyMap).additionalProperties(false);
 
     return this.extend({
       columns: newColumns,
-      schema: array().items(schema),
+      schema: array().items(schema) as any,
     });
   }
 

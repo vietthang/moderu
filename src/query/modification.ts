@@ -1,4 +1,4 @@
-import { ObjectSchema, validate } from 'sukima';
+import { Schema, validate } from 'sukima';
 
 import { Column } from '../column';
 import { Expression } from '../expression';
@@ -16,11 +16,12 @@ export enum ValidationMode {
 export type ModificationQueryProps<Model> = {
   model?: ModificationModel<Model>;
   validationMode: ValidationMode;
-  inputSchema: ObjectSchema<Partial<Model>>;
+  inputSchema: Schema<Partial<Model>>;
 };
 
 function validateSkipExpressions<Model>(
-  schema: ObjectSchema<Partial<Model>>, model: ModificationModel<Model>
+  schema: Schema<Partial<Model>>,
+  model: ModificationModel<Model>,
 ): ModificationModel<Model> {
   const valueModel = Object
     .keys(model)
@@ -48,19 +49,32 @@ function validateSkipExpressions<Model>(
       {},
     );
 
+  const { value, error } = validate(schema, valueModel);
+  if (error) {
+    throw error;
+  }
+
   return {
-    ...validate(schema, valueModel) as any,
+    ...value as any,
     ...expressionModel,
   } as ModificationModel<Model>;
 }
 
-function validateDisallowExpressions<Model>(schema: ObjectSchema<Partial<Model>>, model: ModificationModel<Model>) {
+function validateDisallowExpressions<Model>(
+  schema: Schema<Partial<Model>>,
+  model: ModificationModel<Model>
+): ModificationModel<Model> {
   const keys = Object.keys(model) as (keyof Model)[];
   if (keys.find(key => model[key] instanceof Expression)) {
     throw new Error('Expression is not allowed.');
   }
 
-  return validate(schema, model);
+  const { error, value } = validate(schema, model);
+  if (error) {
+    throw error;
+  } else {
+    return value!;
+  }
 }
 
 export class ModificationQuery<Model, Props extends ModificationQueryProps<Model>> implements Extendable<Props> {

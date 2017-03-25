@@ -23,7 +23,12 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
 
   async execute(query: QueryInterface): Promise<Value> {
     const raw = await this.buildQuery(query);
-    return await validate(this.props.schema, raw, { convert: true });
+    const result = validate(this.props.schema, raw, { convert: true });
+    if (result.error) {
+      throw result.error;
+    } else {
+      return result.value!;
+    }
   }
 
   toSQL(query: QueryInterface): any {
