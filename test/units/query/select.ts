@@ -1,7 +1,7 @@
 import 'mocha';
 import 'source-map-support/register';
 import { assert } from 'chai';
-import { object, integer, string } from 'sukima';
+import { integer, string } from 'sukima';
 import Knex = require('knex');
 
 import { defineTable } from '../../../src/table';
@@ -10,22 +10,22 @@ import { Expression } from '../../../src/expression';
 
 const petTable = defineTable(
   'Pet',
-  object({
+  {
     id: integer().minimum(0),
     name: string(),
     updated: integer().minimum(0),
     ownerId: integer().minimum(0),
-  }),
+  },
   'id',
 );
 
 const userTable = defineTable(
   'User',
-  object({
+  {
     id: integer().minimum(0),
     name: string(),
     updated: integer().minimum(0),
-  }),
+  },
   'id',
 );
 

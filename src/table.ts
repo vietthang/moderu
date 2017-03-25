@@ -1,4 +1,4 @@
-import { ObjectSchema } from 'sukima';
+import { Schema } from 'sukima';
 
 import { Column } from './column';
 
@@ -10,9 +10,11 @@ export interface TableMeta<Model, Id extends keyof Model> extends DataSetMeta<Mo
 
 }
 
+export type PropertyMap<T> = { [key in keyof T]: Schema<T[key]> };
+
 export interface DataSetMeta<Model> {
 
-  readonly schema: ObjectSchema<Model>;
+  readonly schema: PropertyMap<Model>;
 
 }
 
@@ -38,7 +40,7 @@ export type DataSet<Model> = {
 
 export function defineTable<Model, Id extends keyof Model>(
   name: string,
-  schema: ObjectSchema<Model>,
+  schema: PropertyMap<Model>,
   idAttribute: Id,
 ): Table<Model, Id> {
   const meta = {
@@ -47,12 +49,12 @@ export function defineTable<Model, Id extends keyof Model>(
     idAttribute,
   };
 
-  const keys = schema.keys();
+  const keys = Object.keys(schema) as (keyof Model)[];
   const indexedColumns = keys.reduce(
     (prevValue, key) => {
       return {
         ...prevValue,
-        [key]: new Column<Model, any>(meta.schema.getPropertySchema(key as any), key, meta.name),
+        [key]: new Column<Model, keyof Model>(schema[key], key, meta.name),
       };
     },
     {} as any,

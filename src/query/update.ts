@@ -1,5 +1,6 @@
-import { integer } from 'sukima';
+import { integer, object } from 'sukima';
 import { QueryBuilder, QueryInterface } from 'knex';
+import { mapObjIndexed } from 'ramda';
 
 import { Query, QueryProps } from './base';
 import { TableMeta } from '../table';
@@ -45,7 +46,11 @@ export class UpdateQuery<Model>
     super({
       validationMode: ValidationMode.SkipExpressions,
       schema: UpdateQuery.schema,
-      inputSchema: tableMeta.schema.getPartialSchema(),
+      inputSchema: object(
+        mapObjIndexed(
+          (schema: any) => schema.optional(), tableMeta.schema
+        ),
+      ),
       tableName: tableMeta.name,
     });
   }

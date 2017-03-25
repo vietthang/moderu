@@ -1,4 +1,6 @@
 import { QueryBuilder, QueryInterface } from 'knex';
+import { object } from 'sukima';
+import { mapObjIndexed } from 'ramda';
 
 import { TableMeta } from '../table';
 import { Column } from '../column';
@@ -34,9 +36,13 @@ export class InsertQuery<Model, Id extends keyof Model>
   /** @internal */
   constructor(tableMeta: TableMeta<Model, Id>) {
     super({
-      schema: tableMeta.schema.getPropertySchema(tableMeta.idAttribute),
+      schema: tableMeta.schema[tableMeta.idAttribute],
       validationMode: ValidationMode.SkipExpressions,
-      inputSchema: tableMeta.schema.getPartialSchema(),
+      inputSchema: object(
+        mapObjIndexed(
+          (schema: any) => schema.optional(), tableMeta.schema
+        ),
+      ),
       tableName: tableMeta.name,
       idAttribute: tableMeta.idAttribute,
     });

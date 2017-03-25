@@ -1,6 +1,6 @@
 import 'mocha';
 import { assert } from 'chai';
-import { object, integer, string } from 'sukima';
+import { integer, string } from 'sukima';
 import Knex = require('knex');
 
 import { defineTable } from '../../../src/table';
@@ -9,10 +9,10 @@ import { Expression } from '../../../src/expression';
 
 const petTable = defineTable(
   'Pet',
-  object({
+  {
     id: integer().minimum(0),
     name: string(),
-  }),
+  },
   'id',
 );
 

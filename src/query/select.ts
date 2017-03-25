@@ -201,10 +201,8 @@ export class SelectQuery<Model>
   }
 
   tableColumns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2> {
-    const schema: ObjectSchema<any> = table.$meta.schema;
-
     return this.columns(
-      ...schema.keys().map(key => table[key])
+      ...Object.keys(table.$meta.schema).map(key => table[key])
     );
   }
 
