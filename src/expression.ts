@@ -1,16 +1,15 @@
-import { Schema, number, integer, boolean, nullable } from 'sukima'
+import { Schema, number, integer, boolean } from 'sukima'
+import { flatten } from 'ramda'
 
-import { flatten } from './utils/flatten'
+const sumSchema = number().nullable()
 
-const sumSchema = nullable(number())
+const avgSchema = number().nullable()
 
-const avgSchema = nullable(number())
+const minSchema = number().nullable()
 
-const minSchema = nullable(number())
+const maxSchema = number().nullable()
 
-const maxSchema = nullable(number())
-
-const countSchema = nullable(integer().minimum(0))
+const countSchema = integer().minimum(0).nullable()
 
 const conditionSchema = boolean()
 

@@ -49,13 +49,8 @@ function validateSkipExpressions<Model> (
       {},
     )
 
-  const { value, error } = validate(schema, valueModel)
-  if (error) {
-    throw error
-  }
-
   return {
-    ...value as any,
+    ...validate(schema, valueModel) as any,
     ...expressionModel,
   } as ModificationModel<Model>
 }
@@ -69,12 +64,7 @@ function validateDisallowExpressions<Model> (
     throw new Error('Expression is not allowed.')
   }
 
-  const { error, value } = validate(schema, model)
-  if (error) {
-    throw error
-  } else {
-    return value!
-  }
+  return validate(schema, model)
 }
 
 export class ModificationQuery<Model, Props extends ModificationQueryProps<Model>> implements Extendable<Props> {

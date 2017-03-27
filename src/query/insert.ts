@@ -7,7 +7,6 @@ import { Column } from '../column'
 import { Expression } from '../expression'
 import { Query, QueryProps } from './base'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
-import { mapValues } from '../utils/mapValues'
 import { ModificationQuery, ModificationQueryProps, ValidationMode, ModificationModel } from './modification'
 
 import { applyMixins } from '../utils/applyMixins'
@@ -56,13 +55,13 @@ export class InsertQuery<Model, Id extends keyof Model>
       throw new Error('Insert without any model.')
     }
 
-    const rawModel = mapValues(model, (value, key) => {
+    const rawModel = mapObjIndexed((value, key) => {
       if (value instanceof Expression) {
         return makeKnexRaw(query, value.sql, value.bindings, false)
       } else {
         return value
       }
-    })
+    }, model as any)
 
     return query.table(tableName).insert(rawModel).returning(idAttribute)
   }

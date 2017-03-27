@@ -9,7 +9,6 @@ import { Expression } from '../expression'
 import { ModificationQueryProps, ValidationMode, ModificationModel, ModificationQuery } from './modification'
 import { ConditionalQuery, ConditionalQueryProps } from './conditional'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
-import { mapValues } from '../utils/mapValues'
 import { applyMixins } from '../utils/applyMixins'
 
 export type UpdateQueryProps<Model> =
@@ -63,13 +62,13 @@ export class UpdateQuery<Model>
       throw new Error('Update without any model.')
     }
 
-    const rawModel = mapValues(model, (value, key) => {
+    const rawModel = mapObjIndexed((value, key) => {
       if (value instanceof Expression) {
         return makeKnexRaw(query, value.sql, value.bindings, false)
       } else {
         return value
       }
-    })
+    }, model as any)
 
     const builder = query.table(tableName).update(rawModel)
 

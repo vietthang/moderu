@@ -1729,7 +1729,13 @@ qs@~6.4.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.4.0.tgz#13e26d28ad6b0ffaa91312cd3bf708ed351e7233"
 
-ramda@^0.23.0:
+ramda-fantasy@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/ramda-fantasy/-/ramda-fantasy-0.7.0.tgz#ac77a7a5d55dfc1ddc224ac418e9be8900c65d17"
+  dependencies:
+    ramda ">=0.15.0"
+
+ramda@>=0.15.0, ramda@^0.23.0:
   version "0.23.0"
   resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.23.0.tgz#ccd13fff73497a93974e3e86327bfd87bd6e8e2b"
 
@@ -2046,12 +2052,13 @@ strip-json-comments@^2.0.0, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-sukima@^0.7.5:
-  version "0.7.5"
-  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.7.5.tgz#e748573f8dacaaab4808d957e9845750ee02acf0"
+sukima@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.9.0.tgz#c53efb3fd8c72ecb571942e135ebe26e3bc8b6e1"
   dependencies:
     ajv "^4.11.5"
     ramda "^0.23.0"
+    ramda-fantasy "^0.7.0"
 
 supports-color@3.1.2, supports-color@^3.1.0, supports-color@^3.1.2:
   version "3.1.2"

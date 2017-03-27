@@ -1,5 +1,6 @@
 import { array, object } from 'sukima'
 import { QueryBuilder, QueryInterface, JoinClause } from 'knex'
+import { mapObjIndexed } from 'ramda'
 
 import { Query, QueryProps } from './base'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
@@ -8,7 +9,6 @@ import { Expression } from '../expression'
 import { Table, DataSet } from '../table'
 import { Column } from '../column'
 import { applyMixins } from '../utils/applyMixins'
-import { mapValues } from '../utils/mapValues'
 
 export type SelectOrderByDirection = 'asc' | 'desc'
 
@@ -26,7 +26,7 @@ export type SelectJoin = {
   type: SelectJoinType;
 }
 
-export type SelectQueryProps<Model> =
+export type SelectQueryProps<Model extends object> =
   QueryProps<Model[]> &
   ConditionalQueryProps &
   {
@@ -46,7 +46,7 @@ export type KeyValue<Value, Key extends string> = {
   [K in Key]: Value
 }
 
-export class SelectQuery<Model>
+export class SelectQuery<Model extends object>
   extends Query<Model[], SelectQueryProps<Model>>
   implements ConditionalQuery<SelectQueryProps<Model>> {
 
@@ -54,7 +54,7 @@ export class SelectQuery<Model>
 
   /** @internal */
   constructor () {
-    super({ schema: array().items(object()) as any })
+    super({ schema: array((object<Model>({} as any))) })
   }
 
   as (alias: string) {
@@ -77,8 +77,8 @@ export class SelectQuery<Model>
 
     const meta = {
       alias,
-      schema: object().properties(
-        mapValues(indexedColumns, column => column.schema),
+      schema: object(
+        mapObjIndexed((column: Expression<any, any>) => column.schema, indexedColumns as any),
       ),
     }
 
@@ -364,7 +364,7 @@ export class SelectQuery<Model>
 
     return this.extend({
       columns: newColumns,
-      schema: array().items(schema) as any,
+      schema: array(schema) as any,
     })
   }
 
@@ -499,4 +499,4 @@ export class SelectQuery<Model>
 
 applyMixins(SelectQuery, ConditionalQuery)
 
-export type WrappedSelectQuery<Model> = SelectQuery<Model> & DataSet<Model>
+export type WrappedSelectQuery<Model extends object> = SelectQuery<Model> & DataSet<Model>
