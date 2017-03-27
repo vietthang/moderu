@@ -19,7 +19,7 @@ export type ModificationQueryProps<Model> = {
   inputSchema: Schema<Partial<Model>>;
 }
 
-function validateSkipExpressions<Model> (
+function validateSkipExpressions<Model>(
   schema: Schema<Partial<Model>>,
   model: ModificationModel<Model>,
 ): ModificationModel<Model> {
@@ -55,7 +55,7 @@ function validateSkipExpressions<Model> (
   } as ModificationModel<Model>
 }
 
-function validateDisallowExpressions<Model> (
+function validateDisallowExpressions<Model>(
   schema: Schema<Partial<Model>>,
   model: ModificationModel<Model>,
 ): ModificationModel<Model> {
@@ -75,13 +75,13 @@ export class ModificationQuery<Model, Props extends ModificationQueryProps<Model
   /** @internal */
   extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this
 
-  validationMode (validationMode: ValidationMode) {
+  validationMode(validationMode: ValidationMode) {
     return this.extend({
       validationMode,
     })
   }
 
-  value (model: ModificationModel<Model>): this {
+  value(model: ModificationModel<Model>): this {
     let finalModel: ModificationModel<Model>
 
     switch (this.props.validationMode) {
@@ -103,7 +103,7 @@ export class ModificationQuery<Model, Props extends ModificationQueryProps<Model
     })
   }
 
-  set<K extends keyof Model> (
+  set<K extends keyof Model>(
     column: K | Column<Model, K>,
     value: Model[K] | Expression<Model[K], string>,
   ): this {

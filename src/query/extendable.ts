@@ -4,7 +4,7 @@ export class Extendable<Props extends object> {
   public readonly props: Props
 
   /** @internal */
-  public extend<Keys extends keyof Props> (props: Pick<Props, Keys>): this {
+  public extend<Keys extends keyof Props>(props: Pick<Props, Keys>): this {
     return Object.assign(
       Object.create(this.constructor.prototype),
       this,

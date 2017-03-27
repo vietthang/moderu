@@ -39,7 +39,7 @@ export class UpdateQuery<Model>
   where: (condition: Expression<any, any>) => this
 
   /** @internal */
-  constructor (
+  constructor(
     tableMeta: TableMeta<Model, any>,
   ) {
     super({
@@ -55,7 +55,7 @@ export class UpdateQuery<Model>
   }
 
   /** @internal */
-  protected buildQuery (query: QueryInterface): QueryBuilder {
+  protected buildQuery(query: QueryInterface): QueryBuilder {
     const { where, model, tableName } = this.props
 
     if (!model) {

@@ -38,7 +38,7 @@ export type DataSet<Model> = {
 
 }
 
-export function defineTable<Model, Id extends keyof Model> (
+export function defineTable<Model, Id extends keyof Model>(
   name: string,
   schema: PropertyMap<Model>,
   idAttribute: Id,

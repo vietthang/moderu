@@ -22,7 +22,7 @@ export class DeleteQuery<Model> extends Query<number, DeleteProps> implements Co
   where: (condition: Expression<any, any>) => this
 
   /** @internal */
-  constructor (
+  constructor(
     tableMeta: TableMeta<Model, any>,
   ) {
     super({
@@ -32,7 +32,7 @@ export class DeleteQuery<Model> extends Query<number, DeleteProps> implements Co
   }
 
   /** @internal */
-  protected buildQuery (qb: QueryInterface): QueryBuilder {
+  protected buildQuery(qb: QueryInterface): QueryBuilder {
     const builder = qb.table(this.props.tableName).del()
 
     const { where } = this.props

@@ -23,7 +23,7 @@ class TestClass implements Extendable<TestProps> {
   /** @internal */
   extend: (props: Partial<TestProps>) => this
 
-  constructor (props: TestProps) {
+  constructor(props: TestProps) {
     this.props = props
   }
 

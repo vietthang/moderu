@@ -33,7 +33,7 @@ export class InsertQuery<Model, Id extends keyof Model>
   ) => this
 
   /** @internal */
-  constructor (tableMeta: TableMeta<Model, Id>) {
+  constructor(tableMeta: TableMeta<Model, Id>) {
     super({
       schema: tableMeta.schema[tableMeta.idAttribute],
       validationMode: ValidationMode.SkipExpressions,
@@ -48,7 +48,7 @@ export class InsertQuery<Model, Id extends keyof Model>
   }
 
   /** @internal */
-  protected buildQuery (query: QueryInterface): QueryBuilder {
+  protected buildQuery(query: QueryInterface): QueryBuilder {
     const { model, tableName, idAttribute } = this.props
 
     if (!model) {

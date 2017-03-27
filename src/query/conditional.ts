@@ -15,7 +15,7 @@ export class ConditionalQuery<Props extends ConditionalQueryProps> implements Ex
   /** @internal */
   extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this
 
-  where (condition: Expression<any, any>) {
+  where(condition: Expression<any, any>) {
     return this.extend({
       where: this.props.where ? this.props.where.and(condition) : condition,
     } as Props)

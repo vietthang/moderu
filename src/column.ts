@@ -4,14 +4,14 @@ import { Expression, Bindable } from './expression'
 
 class ColumnBinding implements Bindable {
 
-  constructor (
+  constructor(
     private readonly field: string,
     private readonly dataSetAlias: string,
   ) {
 
   }
 
-  bind (isSelect: boolean): string {
+  bind(isSelect: boolean): string {
     if (isSelect) {
       return `${this.dataSetAlias}.${this.field}`
     } else {
@@ -23,7 +23,7 @@ class ColumnBinding implements Bindable {
 
 export class Column<Model, Field extends keyof Model> extends Expression<Model[Field], Field> {
 
-  constructor (
+  constructor(
     schema: Schema<Model[Field]>,
     field: Field,
     dataSetAlias: string,

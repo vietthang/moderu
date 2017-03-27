@@ -17,7 +17,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   readonly props: Props
 
   /** @internal */
-  constructor (props: Props) {
+  constructor(props: Props) {
     this.props = props
   }
 
@@ -34,17 +34,17 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
     )
   }
 
-  async execute (query: QueryInterface): Promise<Value> {
+  async execute(query: QueryInterface): Promise<Value> {
     const raw = await this.buildQuery(query)
     return await validate(this.props.schema, raw)
   }
 
-  toSQL (query: QueryInterface): Sql {
+  toSQL(query: QueryInterface): Sql {
     const { sql, bindings } = this.buildQuery(query).toSQL()
     return { sql, bindings }
   }
 
   /** @internal */
-  protected abstract buildQuery (qb: QueryInterface): QueryBuilder;
+  protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
 
 }

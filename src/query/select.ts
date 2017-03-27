@@ -53,11 +53,11 @@ export class SelectQuery<Model extends object>
   where: (condition: Expression<any, any>) => this
 
   /** @internal */
-  constructor () {
+  constructor() {
     super({ schema: array((object<Model>({} as any))) })
   }
 
-  as (alias: string) {
+  as(alias: string) {
     const { columns } = this.props
 
     if (!columns || columns.length === 0) {
@@ -93,7 +93,7 @@ export class SelectQuery<Model extends object>
     ) as any as WrappedSelectQuery<Model>
   }
 
-  from (from: Table<any, any> | WrappedSelectQuery<any>) {
+  from(from: Table<any, any> | WrappedSelectQuery<any>) {
     if (from instanceof SelectQuery) {
       return this.extend({
         fromQuery: from as WrappedSelectQuery<any>,
@@ -107,7 +107,7 @@ export class SelectQuery<Model extends object>
     }
   }
 
-  join<Model2, Id2 extends keyof Model2> (
+  join<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
     type: SelectJoinType = 'inner',
@@ -122,90 +122,90 @@ export class SelectQuery<Model extends object>
     })
   }
 
-  innerJoin<Model2, Id2 extends keyof Model2> (
+  innerJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'inner')
   }
 
-  leftJoin<Model2, Id2 extends keyof Model2> (
+  leftJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'left')
   }
 
-  leftOuterJoin<Model2, Id2 extends keyof Model2> (
+  leftOuterJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'leftOuter')
   }
 
-  rightJoin<Model2, Id2 extends keyof Model2> (
+  rightJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'right')
   }
 
-  rightOuterJoin<Model2, Id2 extends keyof Model2> (
+  rightOuterJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'rightOuter')
   }
 
-  outerJoin<Model2, Id2 extends keyof Model2> (
+  outerJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'outer')
   }
 
-  fullOuterJoin<Model2, Id2 extends keyof Model2> (
+  fullOuterJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'fullOuter')
   }
 
-  crossJoin<Model2, Id2 extends keyof Model2> (
+  crossJoin<Model2, Id2 extends keyof Model2>(
     table2: Table<Model2, Id2>,
     condition: Expression<any, any>,
   ) {
     return this.join(table2, condition, 'cross')
   }
 
-  groupBy (...columns: Expression<any, any>[]) {
+  groupBy(...columns: Expression<any, any>[]) {
     return this.extend({ groupBys: this.props.groupBys ? this.props.groupBys.concat(columns) : columns })
   }
 
-  having (condition: Expression<any, any>) {
+  having(condition: Expression<any, any>) {
     return this.extend({ having: this.props.having ? this.props.having.and(condition) : condition })
   }
 
-  orderBy (column: Expression<any, any>, direction: 'asc' | 'desc' = 'asc') {
+  orderBy(column: Expression<any, any>, direction: 'asc' | 'desc' = 'asc') {
     const orderBy = { column, direction }
     return this.extend({ orderBys: this.props.orderBys ? this.props.orderBys.concat(orderBy) : [orderBy] })
   }
 
-  limit (limit: number) {
+  limit(limit: number) {
     return this.extend({ limit })
   }
 
-  offset (offset: number) {
+  offset(offset: number) {
     return this.extend({ offset })
   }
 
-  tableColumns<Model2> (table: Table<Model2, any>): SelectQuery<Model & Model2> {
+  tableColumns<Model2>(table: Table<Model2, any>): SelectQuery<Model & Model2> {
     return this.columns(
       ...Object.keys(table.$meta.schema).map(key => table[key]),
     )
   }
 
-  mappedColumns<Mapping> (mapping: { [P in keyof Mapping]: Expression<Mapping[P], any> }): SelectQuery<Model & Mapping> {
+  mappedColumns<Mapping>(mapping: { [P in keyof Mapping]: Expression<Mapping[P], any> }): SelectQuery<Model & Mapping> {
     return this.columns(
       ...Object
         .keys(mapping)
@@ -215,7 +215,7 @@ export class SelectQuery<Model extends object>
 
   columns<
     Value0, Key0 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
   ): SelectQuery<
     & Model
@@ -225,7 +225,7 @@ export class SelectQuery<Model extends object>
   columns<
     Value0, Key0 extends string,
     Value1, Key1 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
   ): SelectQuery<
@@ -238,7 +238,7 @@ export class SelectQuery<Model extends object>
     Value0, Key0 extends string,
     Value1, Key1 extends string,
     Value2, Key2 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
     column2: Expression<Value2, Key2>,
@@ -254,7 +254,7 @@ export class SelectQuery<Model extends object>
     Value1, Key1 extends string,
     Value2, Key2 extends string,
     Value3, Key3 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
     column2: Expression<Value2, Key2>,
@@ -273,7 +273,7 @@ export class SelectQuery<Model extends object>
     Value2, Key2 extends string,
     Value3, Key3 extends string,
     Value4, Key4 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
     column2: Expression<Value2, Key2>,
@@ -295,7 +295,7 @@ export class SelectQuery<Model extends object>
     Value3, Key3 extends string,
     Value4, Key4 extends string,
     Value5, Key5 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
     column2: Expression<Value2, Key2>,
@@ -320,7 +320,7 @@ export class SelectQuery<Model extends object>
     Value4, Key4 extends string,
     Value5, Key5 extends string,
     Value6, Key6 extends string
-  > (
+  >(
     column0: Expression<Value0, Key0>,
     column1: Expression<Value1, Key1>,
     column2: Expression<Value2, Key2>,
@@ -339,9 +339,9 @@ export class SelectQuery<Model extends object>
     & KeyValue<Value6, Key6>
   >;
 
-  columns (...columns: Expression<any, string>[]): SelectQuery<any>;
+  columns(...columns: Expression<any, string>[]): SelectQuery<any>;
 
-  columns (...columns: any[]): SelectQuery<any> {
+  columns(...columns: any[]): SelectQuery<any> {
     const expressions: Expression<any, string>[] = columns
 
     const newColumns = this.props.columns ? this.props.columns.concat(expressions) : expressions
@@ -369,7 +369,7 @@ export class SelectQuery<Model extends object>
   }
 
   /** @internal */
-  buildQuery (query: QueryInterface): QueryBuilder {
+  buildQuery(query: QueryInterface): QueryBuilder {
     const {
       fromQuery,
       fromTable,
