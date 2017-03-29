@@ -1,10 +1,10 @@
 import { Extendable } from './extendable'
 import { applyMixins } from '../utils/applyMixins'
 
-import { Expression } from '../expression'
+import { AnyExpression } from '../expression'
 
 export type ConditionalQueryProps = {
-  where?: Expression<any, any>;
+  where?: AnyExpression;
 }
 
 export class ConditionalQuery<Props extends ConditionalQueryProps> implements Extendable<Props> {
@@ -15,7 +15,7 @@ export class ConditionalQuery<Props extends ConditionalQueryProps> implements Ex
   /** @internal */
   extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this
 
-  where(condition: Expression<any, any>) {
+  where(condition: AnyExpression): this {
     return this.extend({
       where: this.props.where ? this.props.where.and(condition) : condition,
     } as Props)

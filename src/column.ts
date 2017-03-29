@@ -1,6 +1,7 @@
-import { Schema } from 'sukima'
+import { PropertyMap } from 'sukima'
 
-import { Expression, Bindable } from './expression'
+import { Selector, makeSelector } from './selector'
+import { Expression, Bindable, AnyExpression } from './expression'
 
 class ColumnBinding implements Bindable {
 
@@ -21,14 +22,18 @@ class ColumnBinding implements Bindable {
 
 }
 
-export class Column<Model, Field extends keyof Model> extends Expression<Model[Field], Field> {
+export type Column<Model, Key extends keyof Model, Name extends string>
+  = Expression<Model[Key]>
+  & Selector<Model, Key, Name>
 
-  constructor(
-    schema: Schema<Model[Field]>,
-    field: Field,
-    dataSetAlias: string,
-  ) {
-    super('??', [new ColumnBinding(field, dataSetAlias)], schema, field)
-  }
-
+export function makeColumn<Model, Key extends keyof Model, Name extends string>(
+  propertyMap: PropertyMap<Model>,
+  key: Key,
+  name: Name,
+): Column<Model, Key, Name> {
+  return makeSelector<Model, Key, Name, AnyExpression>(
+    name,
+    [key],
+    new Expression<Model[Key]>('??', [new ColumnBinding(key, name)], propertyMap[key]),
+  )
 }

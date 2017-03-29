@@ -1,56 +1,57 @@
 import { integer, object } from 'sukima'
 import { QueryBuilder, QueryInterface } from 'knex'
-import { mapObjIndexed } from 'ramda'
 
-import { Query, QueryProps } from './base'
-import { TableMeta } from '../table'
+import { mapValues } from '../utils'
+import { Query, QueryProps } from './query'
+import { Table } from '../table'
 import { Column } from '../column'
-import { Expression } from '../expression'
-import { ModificationQueryProps, ValidationMode, ModificationModel, ModificationQuery } from './modification'
+import { Expression, AnyExpression } from '../expression'
+import { ModifiableQueryProps, ModifiableModel, ModifiableQuery } from './modifiable'
 import { ConditionalQuery, ConditionalQueryProps } from './conditional'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
 import { applyMixins } from '../utils/applyMixins'
 
 export type UpdateQueryProps<Model> =
   QueryProps<number> &
-  ModificationQueryProps<Model> &
+  ModifiableQueryProps<Model> &
   ConditionalQueryProps & {
 
     tableName: string;
 
   }
 
-export class UpdateQuery<Model>
+export class UpdateQuery<Model, Id extends keyof Model, Name extends string>
   extends Query<number, UpdateQueryProps<Model>>
-  implements ModificationQuery<Model, UpdateQueryProps<Model>>, ConditionalQuery<UpdateQueryProps<Model>> {
+  implements ModifiableQuery<Model, UpdateQueryProps<Model>, Name>, ConditionalQuery<UpdateQueryProps<Model>> {
 
   /** @internal */
   private static schema = integer().minimum(0)
 
-  validationMode: (validationMode: ValidationMode) => this
+  readonly set: <K extends keyof Model>(column: K | Column<Model, K, Name>, value: Model[K]) => this
 
-  value: (model: ModificationModel<Model>) => this
+  readonly setAttributes: (model: Partial<Model>) => this
 
-  set: <K extends keyof Model>(
-    column: K | Column<Model, K>,
-    value: Model[K] | Expression<Model[K], string>,
+  readonly setUnsafe: <K extends keyof Model>(
+    column: K | Column<Model, K, Name>,
+    value: Model[K] | Expression<Model[K]>,
   ) => this
 
-  where: (condition: Expression<any, any>) => this
+  readonly setAttributesUnsafe: (model: ModifiableModel<Model>) => this
+
+  readonly where: (condition: AnyExpression) => this
 
   /** @internal */
   constructor(
-    tableMeta: TableMeta<Model, any>,
+    tableMeta: Table<Model, Name, Id>,
   ) {
     super({
-      validationMode: ValidationMode.SkipExpressions,
       schema: UpdateQuery.schema,
       inputSchema: object(
-        mapObjIndexed(
-          (schema: any) => schema.optional(), tableMeta.schema,
+        mapValues(
+          (schema: any) => schema.optional(), tableMeta.meta.schema,
         ),
       ),
-      tableName: tableMeta.name,
+      tableName: tableMeta.meta.tableName,
     })
   }
 
@@ -62,13 +63,16 @@ export class UpdateQuery<Model>
       throw new Error('Update without any model.')
     }
 
-    const rawModel = mapObjIndexed((value, key) => {
-      if (value instanceof Expression) {
-        return makeKnexRaw(query, value.sql, value.bindings, false)
-      } else {
-        return value
-      }
-    }, model as any)
+    const rawModel = mapValues(
+      (value, key) => {
+        if (value instanceof Expression) {
+          return makeKnexRaw(query, value.sql, value.bindings, false)
+        } else {
+          return value
+        }
+      },
+      model as any,
+    )
 
     const builder = query.table(tableName).update(rawModel)
 
@@ -81,4 +85,4 @@ export class UpdateQuery<Model>
 
 }
 
-applyMixins(UpdateQuery, ModificationQuery, ConditionalQuery)
+applyMixins(UpdateQuery, ModifiableQuery, ConditionalQuery)

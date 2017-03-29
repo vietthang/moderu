@@ -1,10 +1,10 @@
 import { integer } from 'sukima'
 import { QueryBuilder, QueryInterface } from 'knex'
 
-import { Expression } from '../expression'
-import { TableMeta } from '../table'
+import { AnyExpression } from '../expression'
+import { Table } from '../table'
 import { ConditionalQuery, ConditionalQueryProps } from './conditional'
-import { Query, QueryProps } from './base'
+import { Query, QueryProps } from './query'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
 import { applyMixins } from '../utils/applyMixins'
 
@@ -19,14 +19,14 @@ export class DeleteQuery<Model> extends Query<number, DeleteProps> implements Co
   /** @internal */
   private static schema = integer().minimum(0)
 
-  where: (condition: Expression<any, any>) => this
+  where: (condition: AnyExpression) => this
 
   /** @internal */
   constructor(
-    tableMeta: TableMeta<Model, any>,
+    tableMeta: Table<Model, any, any>,
   ) {
     super({
-      tableName: tableMeta.name,
+      tableName: tableMeta.meta.tableName,
       schema: DeleteQuery.schema,
     })
   }

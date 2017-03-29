@@ -25,10 +25,6 @@
   version "7.0.5"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-7.0.5.tgz#96a0f0a618b7b606f1ec547403c00650210bfbb7"
 
-"@types/ramda@github:types/npm-ramda":
-  version "0.23.0-RC1"
-  resolved "https://codeload.github.com/types/npm-ramda/tar.gz/b89d0bd3082519724c0182ffdeb97f1062c66bc5"
-
 abbrev@1, abbrev@1.0.x:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.0.9.tgz#91b4792588a7738c25f35dd6f63752a2f8776135"
@@ -2052,9 +2048,9 @@ strip-json-comments@^2.0.0, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-sukima@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.9.0.tgz#c53efb3fd8c72ecb571942e135ebe26e3bc8b6e1"
+sukima@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.10.0.tgz#c09652f679a2205b94447dff97f8e38a643c71b7"
   dependencies:
     ajv "^4.11.5"
     ramda "^0.23.0"

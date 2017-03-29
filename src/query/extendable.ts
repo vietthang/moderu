@@ -9,10 +9,11 @@ export class Extendable<Props extends object> {
       Object.create(this.constructor.prototype),
       this,
       {
-        props: {
-          ...this.props as any,
-          ...props as any,
-        },
+        props: Object.assign(
+          {},
+          this.props,
+          props,
+        ),
       },
     )
   }

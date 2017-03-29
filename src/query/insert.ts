@@ -1,17 +1,16 @@
 import { QueryBuilder, QueryInterface } from 'knex'
 import { object } from 'sukima'
-import { mapObjIndexed } from 'ramda'
 
-import { TableMeta } from '../table'
+import { mapValues } from '../utils'
 import { Column } from '../column'
 import { Expression } from '../expression'
-import { Query, QueryProps } from './base'
+import { Query, QueryProps } from './query'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
-import { ModificationQuery, ModificationQueryProps, ValidationMode, ModificationModel } from './modification'
-
+import { ModifiableQuery, ModifiableQueryProps, ModifiableModel } from './modifiable'
 import { applyMixins } from '../utils/applyMixins'
+import { Table } from '../table'
 
-export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[Id]> & ModificationQueryProps<Model> & {
+export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[Id]> & ModifiableQueryProps<Model> & {
 
   readonly tableName: string;
 
@@ -19,31 +18,40 @@ export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[I
 
 }
 
-export class InsertQuery<Model, Id extends keyof Model>
+export interface Blah {
+
+  (model: number): number
+
+  (key: string, value: string): string
+
+}
+
+export class InsertQuery<Model, Id extends keyof Model, Name extends string>
   extends Query<Model[Id], InsertQueryProps<Model, Id>>
-  implements ModificationQuery<Model, InsertQueryProps<Model, Id>> {
+  implements ModifiableQuery<Model, InsertQueryProps<Model, Id>, Name> {
 
-  validationMode: (validationMode: ValidationMode) => this
+  readonly set: <K extends keyof Model>(column: K | Column<Model, K, Name>, value: Model[K]) => this
 
-  value: (model: ModificationModel<Model>) => this
+  readonly setAttributes: (model: Partial<Model>) => this
 
-  set: <K extends keyof Model>(
-    column: K | Column<Model, K>,
-    value: Model[K] | Expression<Model[K], string>,
+  readonly setUnsafe: <K extends keyof Model>(
+    column: K | Column<Model, K, Name>,
+    value: Model[K] | Expression<Model[K]>,
   ) => this
 
+  readonly setAttributesUnsafe: (model: ModifiableModel<Model>) => this
+
   /** @internal */
-  constructor(tableMeta: TableMeta<Model, Id>) {
+  constructor(table: Table<Model, Name, Id>) {
     super({
-      schema: tableMeta.schema[tableMeta.idAttribute],
-      validationMode: ValidationMode.SkipExpressions,
+      schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute],
       inputSchema: object(
-        mapObjIndexed(
-          (schema: any) => schema.optional(), tableMeta.schema,
+        mapValues(
+          (schema: any) => schema.optional(), table.meta.schema,
         ),
       ),
-      tableName: tableMeta.name,
-      idAttribute: tableMeta.idAttribute,
+      tableName: table.meta.tableName,
+      idAttribute: table.meta.idAttribute,
     })
   }
 
@@ -55,17 +63,20 @@ export class InsertQuery<Model, Id extends keyof Model>
       throw new Error('Insert without any model.')
     }
 
-    const rawModel = mapObjIndexed((value, key) => {
-      if (value instanceof Expression) {
-        return makeKnexRaw(query, value.sql, value.bindings, false)
-      } else {
-        return value
-      }
-    }, model as any)
+    const rawModel = mapValues(
+      (value, key) => {
+        if (value instanceof Expression) {
+          return makeKnexRaw(query, value.sql, value.bindings, false)
+        } else {
+          return value
+        }
+      },
+      model,
+    )
 
     return query.table(tableName).insert(rawModel).returning(idAttribute)
   }
 
 }
 
-applyMixins(InsertQuery, ModificationQuery)
+applyMixins(InsertQuery, ModifiableQuery)

@@ -1,6 +1,8 @@
 import { Schema, validate } from 'sukima'
 import { QueryInterface, QueryBuilder } from 'knex'
+
 import { Extendable } from './extendable'
+import { applyMixins } from '../utils/applyMixins'
 
 export type QueryProps<Value> = {
   schema: Schema<Value>;
@@ -11,32 +13,30 @@ export interface Sql {
   bindings: any[]
 }
 
+export interface QueryConfig {
+  validateOutput: boolean,
+}
+
 export abstract class Query<Value, Props extends QueryProps<Value>> implements Extendable<Props> {
 
   /** @internal */
   readonly props: Props
 
   /** @internal */
+  extend: <Keys extends keyof Props>(props: Pick<Props, Keys>) => this
+
+  /** @internal */
   constructor(props: Props) {
     this.props = props
   }
 
-  public extend<Keys extends keyof Props>(props: Pick<Props, Keys>): this {
-    return Object.assign(
-      Object.create(this.constructor.prototype),
-      this,
-      {
-        props: {
-          ...this.props as any,
-          ...props as any,
-        },
-      },
-    )
-  }
-
-  async execute(query: QueryInterface): Promise<Value> {
+  async execute(query: QueryInterface, config: QueryConfig = { validateOutput: false }): Promise<Value> {
     const raw = await this.buildQuery(query)
-    return await validate(this.props.schema, raw)
+    if (config.validateOutput) {
+      return await validate(this.props.schema, raw)
+    } else {
+      return raw
+    }
   }
 
   toSQL(query: QueryInterface): Sql {
@@ -48,3 +48,5 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
 
 }
+
+applyMixins(Query, Extendable)
