@@ -48,7 +48,8 @@ export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
       schema: UpdateQuery.schema,
       inputSchema: object(
         mapValues(
-          (schema: any) => schema.optional(), tableMeta.meta.schema,
+          (schema: any) => schema.optional(),
+          tableMeta.meta.schema.getPropertyMap(),
         ),
       ),
       tableName: tableMeta.meta.tableName,
