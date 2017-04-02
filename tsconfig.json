@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "outDir": "build",
+    "rootDir": ".",
     "target": "es2015",
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
     "strictNullChecks": true,
-    "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -14,13 +14,7 @@
     "noUnusedLocals": true,
     "removeComments": true,
     "stripInternal": true,
-    "declaration": true,
-    "suppressImplicitAnyIndexErrors": true
+    "declaration": true
   },
-  "filesGlob": [
-    "src/index.ts",
-    "test/**/*.spec.ts",
-    "!./node_modules/**/*.ts"
-  ],
   "compileOnSave": false
 }

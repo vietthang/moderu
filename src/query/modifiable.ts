@@ -50,7 +50,7 @@ export class ModifiableQuery<
         {},
         this.props.model,
         model,
-      )
+      ),
     })
   }
 

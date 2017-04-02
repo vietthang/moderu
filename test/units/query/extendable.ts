@@ -1,50 +1,50 @@
 import 'mocha'
-import { assert } from 'chai'
+import * as assert from 'assert'
 
 import { Extendable } from '../../../src/query/extendable'
-import { applyMixins } from '../../../src/utils/applyMixins'
 
-interface TestProps {
+interface MockProps {
   foo: string
   bar: number
-  complicated: {
-    fooz: string;
-    barz: {
-      barzz: number;
-    };
-  }
 }
 
-class TestClass implements Extendable<TestProps> {
+class MockClass extends Extendable<MockProps> {
 
-  /** @internal */
-  readonly props: TestProps
+  public readonly props: MockProps
 
-  /** @internal */
-  extend: (props: Partial<TestProps>) => this
-
-  constructor(props: TestProps) {
+  constructor(props: MockProps) {
+    super()
     this.props = props
   }
 
 }
 
-applyMixins(TestClass, Extendable)
-
-it('Should extend with new property correctly', () => {
-  const source = new TestClass({
-    foo: 'string',
-    bar: 1,
-    complicated: {
-      fooz: 'string',
-      barz: {
-        barzz: 2,
+describe('Test Extendable class', () => {
+  it('Should create new instance and it should be extend correctly', () => {
+    const instance = new MockClass({ foo: 'foo', bar: 1 })
+    assert.deepEqual(instance, {
+      props: {
+        foo: 'foo',
+        bar: 1,
       },
-    },
-  })
+    })
 
-  const extended = source.extend({ foo: 'string2' })
-  assert.equal(extended.constructor, TestClass)
-  assert.deepEqual(extended.props, { ...source.props, foo: 'string2' })
-  assert.deepEqual(extended.props.foo, 'string2')
+    const newInstance1 = instance.extend({ foo: 'fooz' })
+    assert.notEqual(instance, newInstance1)
+    assert.deepEqual(newInstance1, {
+      props: {
+        foo: 'fooz',
+        bar: 1,
+      },
+    })
+
+    const newInstance2 = instance.extend({ foo: 'fooz', bar: 0 })
+    assert.notEqual(instance, newInstance2)
+    assert.deepEqual(newInstance2, {
+      props: {
+        foo: 'fooz',
+        bar: 0,
+      },
+    })
+  })
 })

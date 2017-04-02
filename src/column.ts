@@ -3,18 +3,19 @@ import { PropertyMap } from 'sukima'
 import { Selector, makeSelector } from './selector'
 import { Expression, Bindable, AnyExpression } from './expression'
 
-class ColumnBinding implements Bindable {
+/** @internal */
+export class ColumnBinding implements Bindable {
 
   constructor(
     private readonly field: string,
-    private readonly dataSetAlias: string,
+    private readonly dataSetName: string,
   ) {
 
   }
 
   bind(isSelect: boolean): string {
     if (isSelect) {
-      return `${this.dataSetAlias}.${this.field}`
+      return `${this.dataSetName}.${this.field}`
     } else {
       return this.field
     }

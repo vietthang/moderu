@@ -2,7 +2,7 @@ import { Schema, anyOf, nil, ObjectSchema } from 'sukima'
 
 import { mapValues } from './utils'
 
-export function toPartial<T, Key extends keyof T> (
+export function toPartial<T, Key extends keyof T>(
   key: Key, value: T[Key],
 ): Partial<T> {
   return {
@@ -10,7 +10,7 @@ export function toPartial<T, Key extends keyof T> (
   } as any
 }
 
-export function toMappedValue<Key extends string, Value> (
+export function toMappedValue<Key extends string, Value>(
   key: Key, value: Value,
 ): { [key in Key]: Value } {
   return {
@@ -25,7 +25,7 @@ export type ValueNullable<Model> = {
 }
 
 export function convertToNullableSchema<T>(
-  schema: ModelSchema<T>
+  schema: ModelSchema<T>,
 ): ModelSchema<ValueNullable<T>> {
   return mapValues(
     (schema: Schema<T[keyof T]>, key: keyof T) => {

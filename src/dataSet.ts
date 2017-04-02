@@ -10,13 +10,11 @@ export type ColumnMap<Model, Key extends keyof Model, Name extends string> = {
 
 }
 
-export type DataSet<Model, Name extends string> = {
+export interface DataSetCore<Model, Name extends string> {
 
   readonly '*': Selector<Model, keyof Model, Name>
 
   readonly meta: {
-
-    readonly name: Name,
 
     readonly schema: ModelSchema<Model>,
 
@@ -25,8 +23,11 @@ export type DataSet<Model, Name extends string> = {
   as<Alias extends string>(alias: Alias): DataSet<Model, Alias>
 
 }
-& ColumnMap<Model, keyof Model, Name>
-& Selector<Model, keyof Model, Name>
+
+export type DataSet<Model, Name extends string>
+  = DataSetCore<Model, Name>
+  & ColumnMap<Model, keyof Model, Name>
+  & Selector<Model, keyof Model, Name>
 
 export function makeDataSet<Model, Name extends string, T>(
   name: Name,
@@ -45,7 +46,10 @@ export function makeDataSet<Model, Name extends string, T>(
       {} as ColumnMap<Model, keyof Model, Name>,
     )
 
+  const ret = Object.create(base.constructor.prototype)
+
   return Object.assign(
+    ret,
     base,
     {
       meta: {
@@ -53,7 +57,7 @@ export function makeDataSet<Model, Name extends string, T>(
         schema: object<Model>(propertyMap),
         keys,
       },
-      '*': base as any,
+      '*': ret,
       as<Alias extends string>(alias: Alias): DataSet<Model, Alias> {
         return makeDataSet<Model, Alias, T>(alias, propertyMap, base)
       },

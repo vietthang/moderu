@@ -20,7 +20,7 @@ export type UpdateQueryProps<Model> =
 
   }
 
-export class UpdateQuery<Model, Id extends keyof Model, Name extends string>
+export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
   extends Query<number, UpdateQueryProps<Model>>
   implements ModifiableQuery<Model, UpdateQueryProps<Model>, Name>, ConditionalQuery<UpdateQueryProps<Model>> {
 
@@ -42,7 +42,7 @@ export class UpdateQuery<Model, Id extends keyof Model, Name extends string>
 
   /** @internal */
   constructor(
-    tableMeta: Table<Model, Name, Id>,
+    tableMeta: Table<Model, Name, ID>,
   ) {
     super({
       schema: UpdateQuery.schema,

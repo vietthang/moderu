@@ -26,9 +26,9 @@ export interface Blah {
 
 }
 
-export class InsertQuery<Model, Id extends keyof Model, Name extends string>
-  extends Query<Model[Id], InsertQueryProps<Model, Id>>
-  implements ModifiableQuery<Model, InsertQueryProps<Model, Id>, Name> {
+export class InsertQuery<Model, Name extends string, ID extends keyof Model>
+  extends Query<Model[ID], InsertQueryProps<Model, ID>>
+  implements ModifiableQuery<Model, InsertQueryProps<Model, ID>, Name> {
 
   readonly set: <K extends keyof Model>(column: K | Column<Model, K, Name>, value: Model[K]) => this
 
@@ -42,7 +42,7 @@ export class InsertQuery<Model, Id extends keyof Model, Name extends string>
   readonly setAttributesUnsafe: (model: ModifiableModel<Model>) => this
 
   /** @internal */
-  constructor(table: Table<Model, Name, Id>) {
+  constructor(table: Table<Model, Name, ID>) {
     super({
       schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute],
       inputSchema: object(

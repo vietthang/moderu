@@ -23,8 +23,7 @@ export type BaseSelectQueryProps<Model>
   }
 
 export abstract class BaseSelectQuery<Model, Props extends BaseSelectQueryProps<Model>>
-  extends Query<Model[], Props> implements ConditionalQuery<Props>
-{
+  extends Query<Model[], Props> implements ConditionalQuery<Props> {
 
   where: (condition: AnyExpression) => this
 

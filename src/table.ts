@@ -1,7 +1,7 @@
 import { PropertyMap } from 'sukima'
 
-import { ValueNullable } from './common'
-import { DataSet, ColumnMap, makeDataSet } from './dataSet'
+import { ValueNullable, ModelSchema } from './common'
+import { DataSetCore, DataSet, ColumnMap, makeDataSet } from './dataSet'
 import { AnyExpression } from './expression'
 import { makeJoinedTable, JoinedTable } from './combinedTable'
 
@@ -11,22 +11,28 @@ export type Selector<Model, Key extends keyof Model, Name extends string> = {
   },
 } & ColumnMap<Model, Key, Name>
 
-export type Table<Model, Name extends string, ID extends keyof Model> =
-  Joinable<{ [key in Name]: Model }>
+export interface TableCore<Model, Name extends string, ID extends keyof Model> extends DataSetCore<Model, Name> {
+
+  readonly meta: {
+
+    readonly name: Name,
+
+    readonly schema: ModelSchema<Model>,
+
+    readonly tableName: string,
+
+    readonly idAttribute: ID,
+
+  },
+
+  as<Alias extends string>(alias: Alias): Table<Model, Alias, ID>
+
+}
+
+export type Table<Model, Name extends string, ID extends keyof Model>
+  = Joinable<{ [key in Name]: Model }>
+  & TableCore<Model, Name, ID>
   & DataSet<Model, Name>
-  & {
-
-    readonly meta: {
-
-      readonly tableName: string,
-
-      readonly idAttribute: ID,
-
-    },
-
-    as<Alias extends string>(alias: Alias): Table<Model, Alias, ID>
-
-  }
 
 export interface Joinable<CombinedModel> {
 
@@ -76,7 +82,7 @@ function defineTableWithAlias<Model, Name extends string, ID extends keyof Model
         {
           tableName,
           idAttribute,
-        }
+        },
       ),
 
       '*': ret,

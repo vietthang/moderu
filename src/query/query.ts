@@ -30,7 +30,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
     this.props = props
   }
 
-  async execute(query: QueryInterface, config: QueryConfig = { validateOutput: false }): Promise<Value> {
+  async execute(query: QueryInterface, config: QueryConfig = { validateOutput: true }): Promise<Value> {
     const raw = await this.buildQuery(query)
     if (config.validateOutput) {
       return await validate(this.props.schema, raw)
