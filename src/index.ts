@@ -32,3 +32,5 @@ export function del<Model, Name extends string, ID extends keyof Model>(
 ): DeleteQuery<Model> {
   return new DeleteQuery<Model>(table)
 }
+
+export { defineTable } from './table'
