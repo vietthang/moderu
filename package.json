@@ -1,6 +1,6 @@
 {
   "name": "moderu",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Type-safe library for knex query & model.",
   "main": "build/src/index.js",
   "scripts": {
