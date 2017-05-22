@@ -47,7 +47,8 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
       schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute],
       inputSchema: object(
         mapValues(
-          (schema: any) => schema.optional(), table.meta.schema,
+          (schema: any) => schema.optional(),
+          table.meta.schema.getPropertyMap(),
         ),
       ),
       tableName: table.meta.tableName,

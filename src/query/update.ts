@@ -42,17 +42,17 @@ export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
 
   /** @internal */
   constructor(
-    tableMeta: Table<Model, Name, ID>,
+    table: Table<Model, Name, ID>,
   ) {
     super({
       schema: UpdateQuery.schema,
       inputSchema: object(
         mapValues(
           (schema: any) => schema.optional(),
-          tableMeta.meta.schema.getPropertyMap(),
+          table.meta.schema.getPropertyMap(),
         ),
       ),
-      tableName: tableMeta.meta.tableName,
+      tableName: table.meta.tableName,
     })
   }
 

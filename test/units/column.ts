@@ -7,15 +7,18 @@ import { petPropertyMap } from '../common'
 describe('Test Column', () => {
   const idColumn = makeColumn(petPropertyMap, 'id', 'Pet')
 
-  assert.deepEqual(idColumn, {
-    sql: '??',
-    bindings: [{ field: 'id', dataSetName: 'Pet' }],
-    schema: petPropertyMap.id,
-    meta: {
-      name: 'Pet',
-      keys: ['id'],
+  assert.deepEqual(
+    idColumn,
+    {
+      sql: '??',
+      bindings: [{ field: 'id', dataSetName: 'Pet' }],
+      schema: petPropertyMap.id,
+      meta: {
+        name: 'Pet',
+        keys: ['id'],
+      },
     },
-  })
+  )
 })
 
 describe('Test ColumnBinding', () => {

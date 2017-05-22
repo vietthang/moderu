@@ -1,4 +1,5 @@
 import { Schema, number, integer, boolean } from 'sukima'
+// import { Value } from 'knex'
 
 import { flatten } from './utils'
 
@@ -38,15 +39,6 @@ export interface Bindable {
   bind(isSelect: boolean): string
 
 }
-
-// /** @internal */
-// export function equals(lhs: Value<any>, rhs: Value<any>) {
-//   return new Expression<boolean>(
-//     `${getExpression(lhs)} = ${getExpression(rhs)}`,
-//     [...getBindings(lhs), ...getBindings(rhs)],
-//     conditionSchema,
-//   )
-// }
 
 export class Expression<OutputType> {
 
@@ -209,6 +201,20 @@ export class Expression<OutputType> {
     )
   }
 
+  as<Alias extends string>(alias: Alias): NamedExpression<OutputType, Alias> {
+    const ret = Object.create(this.constructor.prototype)
+
+    return Object.assign(
+      ret,
+      this,
+      { alias },
+    )
+  }
+
 }
 
 export type AnyExpression = Expression<any>
+
+export type NamedExpression<Value, Alias extends string>
+  = Expression<Value>
+  & { alias: Alias }

@@ -69,7 +69,8 @@ function defineTableWithAlias<Model, Name extends string, ID extends keyof Model
 ): Table<Model, Name, ID> {
   type CombinedModel = { [key in Name]: Model }
 
-  const ret = makeDataSet<Model, Name, object>(name, propertyMap, {})
+  const ret = makeDataSet(name, propertyMap, {})
+
   const { schema } = ret.meta
 
   return Object.assign(
@@ -84,8 +85,6 @@ function defineTableWithAlias<Model, Name extends string, ID extends keyof Model
           idAttribute,
         },
       ),
-
-      '*': ret,
 
       as<Alias extends string>(alias: Alias): Table<Model, Alias, ID> {
         return defineTableWithAlias<Model, Alias, ID>(tableName, propertyMap, idAttribute, alias)

@@ -14,7 +14,6 @@ describe('Test DataSet', () => {
     const mockDataSet = makeDataSet('Pet', petPropertyMap, mock)
 
     assert.notEqual(mock, mockDataSet)
-    assert.equal(mockDataSet['*'], mockDataSet)
     assert.equal(mockDataSet.foo, 'foo')
     assert.equal(mockDataSet.bar, 'bar')
     assert.deepEqual(mockDataSet.meta, {

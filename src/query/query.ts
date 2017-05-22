@@ -4,8 +4,10 @@ import { QueryInterface, QueryBuilder } from 'knex'
 import { Extendable } from './extendable'
 import { applyMixins } from '../utils/applyMixins'
 
+export type SchemaBuilder<Value> = () => Schema<Value>
+
 export type QueryProps<Value> = {
-  schema: Schema<Value>;
+  schema: Schema<Value> | SchemaBuilder<Value>;
 }
 
 export interface Sql {
@@ -33,7 +35,8 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   async execute(query: QueryInterface, config: QueryConfig = { validateOutput: true }): Promise<Value> {
     const raw = await this.buildQuery(query)
     if (config.validateOutput) {
-      return await validate(this.props.schema, raw)
+      const schema = typeof this.props.schema === 'function' ? this.props.schema() : this.props.schema
+      return await validate(schema, raw)
     } else {
       return raw
     }

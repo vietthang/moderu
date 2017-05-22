@@ -211,7 +211,7 @@ describe('Test Expression construction', () => {
         } else {
           return 'not selected'
         }
-      }
+      },
     }
     const expression = new Expression('?', [customBinding], integer())
     {

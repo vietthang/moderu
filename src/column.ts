@@ -1,7 +1,7 @@
 import { PropertyMap } from 'sukima'
 
 import { Selector, makeSelector } from './selector'
-import { Expression, Bindable, AnyExpression } from './expression'
+import { Expression, Bindable } from './expression'
 
 /** @internal */
 export class ColumnBinding implements Bindable {
@@ -32,9 +32,11 @@ export function makeColumn<Model, Key extends keyof Model, Name extends string>(
   key: Key,
   name: Name,
 ): Column<Model, Key, Name> {
-  return makeSelector<Model, Key, Name, AnyExpression>(
+  const expression = new Expression<Model[Key]>('??', [new ColumnBinding(key, name)], propertyMap[key])
+
+  return makeSelector<Model, Key, Name, typeof expression>(
     name,
     [key],
-    new Expression<Model[Key]>('??', [new ColumnBinding(key, name)], propertyMap[key]),
+    expression,
   )
 }

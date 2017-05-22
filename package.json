@@ -26,8 +26,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/bluebird": "^3.0.37",
-    "@types/knex": "0.0.41",
-    "@types/mocha": "^2.2.39",
+    "@types/knex": "^0.0.50",
+    "@types/mocha": "^2.2.41",
     "@types/node": "7.0.5",
     "dts-bundle": "^0.7.2",
     "istanbul": "^0.4.5",

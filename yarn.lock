@@ -6,16 +6,16 @@
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.2.tgz#ecf1104217495e50fe0b588d538146cd6f733b89"
 
-"@types/knex@0.0.41":
-  version "0.0.41"
-  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.0.41.tgz#9e76dc8d1aa8ee4aaca00f8d863c0fd9dc4f0229"
+"@types/knex@^0.0.50":
+  version "0.0.50"
+  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.0.50.tgz#17b3a2247323c8025a1aed700dcfd3ffd7abf8d4"
   dependencies:
     "@types/bluebird" "*"
     "@types/node" "*"
 
-"@types/mocha@^2.2.39":
-  version "2.2.40"
-  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.40.tgz#9811dd800ece544cd84b5b859917bf584a150c4c"
+"@types/mocha@^2.2.41":
+  version "2.2.41"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.41.tgz#e27cf0817153eb9f2713b2d3f6c68f1e1c3ca608"
 
 "@types/node@*", "@types/node@7.0.5":
   version "7.0.5"

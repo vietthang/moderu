@@ -8,8 +8,8 @@ import { mapValues } from '../../../src/utils'
 import { Expression } from '../../../src/expression'
 
 interface MockProps {
-  model?: ModifiableModel<Pet>;
-  inputSchema: Schema<Partial<Pet>>;
+  model?: ModifiableModel<Pet>
+  inputSchema: Schema<Partial<Pet>>
 }
 
 class MockClass extends ModifiableQuery<Pet, MockProps, 'Pet'> {
@@ -89,19 +89,16 @@ describe('Test ModifiableQuery class', () => {
     })
   })
 
-  it('Should work with setAttribute correctly', () => {
+  it('Should set to an expression with column using setUnsafe', () => {
+    const dummyExpression = new Expression('1', [], integer())
     const query = new MockClass({ inputSchema })
 
-    const newQuery = query.setAttributes({
-      id: 1,
-      name: 'Pluto',
-    })
+    const newQuery = query.setUnsafe('id', dummyExpression)
     assert.deepEqual(newQuery, {
       props: {
         inputSchema,
         model: {
-          id: 1,
-          name: 'Pluto',
+          id: dummyExpression,
         },
       },
     })

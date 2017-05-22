@@ -1,32 +1,18 @@
-import { object } from 'sukima'
-
 import { Table } from './table'
-import { JoinedTable } from './combinedTable'
-import { DataSet } from './dataSet'
-import { SimpleSelectQuery, makeSimpleQuery } from './query/simpleSelect'
-import { CombinedSelectQuery, makeCombinedSelectQuery } from './query/combinedSelect'
+import { makeJoinedTable } from './combinedTable'
+import { SelectQuery } from './query/select'
 import { InsertQuery } from './query/insert'
 import { UpdateQuery } from './query/update'
 import { DeleteQuery } from './query/delete'
 
 export type BaseCombinedOuput<Model> = { [key in keyof Model]: object }
 
-export function select<Model>(
-  dataSet: JoinedTable<Model>,
-): CombinedSelectQuery<{ [key in keyof Model]: object }, Model>
-
 export function select<Model, Name extends string>(
-  dataSet: DataSet<Model, Name>,
-): SimpleSelectQuery<object, Model, Name>
-
-export function select<Model, Name extends string>(
-  input: JoinedTable<Model> | DataSet<Model, Name>,
-): CombinedSelectQuery<BaseCombinedOuput<Model>, Model> | SimpleSelectQuery<object, Model, Name> {
-  if (input instanceof JoinedTable) {
-    return makeCombinedSelectQuery(input, object({})) as any
-  } else {
-    return makeSimpleQuery(input, object({}))
-  }
+  table: Table<Model, Name, any>,
+): SelectQuery<{ [key in Name]: Model }, {}, { [key in Name]: Model }> {
+  return new SelectQuery<{ [key in Name]: Model }, {}, { [key in Name]: Model }>(
+    makeJoinedTable(table.meta.tableName, table.meta.name, table.meta.schema),
+  )
 }
 
 export function insert<Model, Name extends string, ID extends keyof Model>(
