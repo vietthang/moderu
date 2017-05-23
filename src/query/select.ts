@@ -427,7 +427,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
                   {},
                   prev._,
                   { [key]: entry[key] },
-                )
+                ),
               },
             )
           }
