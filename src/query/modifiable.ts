@@ -30,9 +30,12 @@ export class ModifiableQuery<
   }
 
   setAttributes(model: Partial<Model>): this {
-    const validatedModel = validate(this.props.inputSchema, model)
+    const result = validate(this.props.inputSchema, model)
 
-    return this.setAttributesUnsafe(validatedModel)
+    return result.cata(
+      (error) => { throw error },
+      (model) => this.setAttributesUnsafe(model),
+    )
   }
 
   setUnsafe<K extends keyof Model>(

@@ -28,6 +28,7 @@ export type DataSet<Model, Name extends string>
   = DataSetCore<Model, Name>
   & ColumnMap<Model, keyof Model, Name>
   & Selector<Model, keyof Model, Name>
+  & { model: Model }
 
 export function makeDataSet<Model, Name extends string, T>(
   name: Name,
@@ -60,6 +61,7 @@ export function makeDataSet<Model, Name extends string, T>(
       as<Alias extends string>(alias: Alias): DataSet<Model, Alias> {
         return makeDataSet<Model, Alias, T>(alias, propertyMap, base)
       },
+      model: null as any as Model,
     },
     columnMap,
   )

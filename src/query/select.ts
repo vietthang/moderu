@@ -50,7 +50,7 @@ function buildItemSchema<Model>(props: BaseSelectQueryProps<Model>): Schema<Mode
             (innerMapped, innerKey) => {
               return Object.assign(
                 innerMapped,
-                { [innerKey]: from.schemaMap[entry.key].toPropertyMap()[innerKey] },
+                { [innerKey]: from.schemaMap[entry.key].getPropertyMap()[innerKey] },
               )
             },
             mapped[entry.key] || {},
@@ -73,8 +73,8 @@ function buildItemSchema<Model>(props: BaseSelectQueryProps<Model>): Schema<Mode
 
   return object<any>({
     ...columnsMapping,
-    _: extraColumnsMapping,
-  })
+    _: object(extraColumnsMapping).optional(),
+  }).additionalProperties(false)
 }
 
 export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {}>
@@ -86,7 +86,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   constructor(dataSet: JoinedTable<CombinedModel>) {
     super({
       from: dataSet,
-      schema: () => array(buildItemSchema(this.props)),
+      schema: null as any,
       columns: [],
       columnsWithin: [],
     })
@@ -408,6 +408,53 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
     }
 
     return qb
+  }
+
+  protected buildResult(result: any): any {
+    return result.map((entry: any) => {
+      const keys = Object.keys(entry)
+
+      return keys.reduce(
+        (prev, key) => {
+          const parts = key.match(/^\$_([a-zA-Z0-9]+)_([a-zA-Z0-9]+)$/)
+
+          if (parts === null) {
+            return Object.assign(
+              {},
+              prev,
+              {
+                _: Object.assign(
+                  {},
+                  prev._,
+                  { [key]: entry[key] },
+                )
+              },
+            )
+          }
+
+          const namespace = parts[1]
+          const field = parts[2]
+
+          return Object.assign(
+            {},
+            prev,
+            {
+              [namespace]: Object.assign(
+                {},
+                prev[namespace],
+                { [field]: entry[key] },
+              ),
+            },
+          )
+        },
+        {} as any,
+      )
+    })
+  }
+
+  /** @internal */
+  protected buildSchema(): Schema<(Model & Default)[]> {
+    return array(buildItemSchema(this.props))
   }
 
 }

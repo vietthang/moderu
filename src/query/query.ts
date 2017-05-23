@@ -7,7 +7,7 @@ import { applyMixins } from '../utils/applyMixins'
 export type SchemaBuilder<Value> = () => Schema<Value>
 
 export type QueryProps<Value> = {
-  schema: Schema<Value> | SchemaBuilder<Value>;
+  schema: Schema<Value>,
 }
 
 export interface Sql {
@@ -33,10 +33,13 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   }
 
   async execute(query: QueryInterface, config: QueryConfig = { validateOutput: true }): Promise<Value> {
-    const raw = await this.buildQuery(query)
+    const raw = this.buildResult(await this.buildQuery(query))
+
     if (config.validateOutput) {
-      const schema = typeof this.props.schema === 'function' ? this.props.schema() : this.props.schema
-      return await validate(schema, raw)
+      return validate(this.buildSchema(), raw).cata(
+        (error) => { throw error },
+        value => value,
+      )
     } else {
       return raw
     }
@@ -49,6 +52,16 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
 
   /** @internal */
   protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
+
+  /** @internal */
+  protected buildResult(result: any): any {
+    return result
+  }
+
+  /** @internal */
+  protected buildSchema(): Schema<Value> {
+    return this.props.schema
+  }
 
 }
 
