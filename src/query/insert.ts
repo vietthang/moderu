@@ -78,6 +78,11 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
     return query.table(tableName).insert(rawModel).returning(idAttribute)
   }
 
+  /** @internal */
+  protected buildResult(result: any): any {
+    return result[0]
+  }
+
 }
 
 applyMixins(InsertQuery, ModifiableQuery)
