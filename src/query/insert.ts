@@ -10,24 +10,16 @@ import { ModifiableQuery, ModifiableQueryProps, ModifiableModel } from './modifi
 import { applyMixins } from '../utils/applyMixins'
 import { Table } from '../table'
 
-export type InsertQueryProps<Model, Id extends keyof Model> = QueryProps<Model[Id]> & ModifiableQueryProps<Model> & {
-
-  readonly tableName: string;
-
-  readonly idAttribute: Id;
-
-}
-
-export interface Blah {
-
-  (model: number): number
-
-  (key: string, value: string): string
-
-}
+export type InsertQueryProps<Model, Id extends keyof Model>
+  = QueryProps<Model[Id] | null>
+  & ModifiableQueryProps<Model>
+  & {
+    readonly tableName: string,
+    readonly idAttribute: Id,
+  }
 
 export class InsertQuery<Model, Name extends string, ID extends keyof Model>
-  extends Query<Model[ID], InsertQueryProps<Model, ID>>
+  extends Query<Model[ID] | null, InsertQueryProps<Model, ID>>
   implements ModifiableQuery<Model, InsertQueryProps<Model, ID>, Name> {
 
   readonly set: <K extends keyof Model>(column: K | Column<Model, K, Name>, value: Model[K]) => this
@@ -44,7 +36,7 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
   /** @internal */
   constructor(table: Table<Model, Name, ID>) {
     super({
-      schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute],
+      schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute].nullable(),
       inputSchema: object(
         mapValues(
           (schema: any) => schema.optional(),
@@ -80,7 +72,7 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
 
   /** @internal */
   protected buildResult(result: any): any {
-    return result[0]
+    return result.length ? result[0] : null
   }
 
 }
