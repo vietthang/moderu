@@ -18,15 +18,13 @@ export function toMappedValue<Key extends string, Value>(
   } as any
 }
 
-export type ModelSchema<T> = ObjectSchema<T, never, T, never>
-
 export type ValueNullable<Model> = {
   [key in keyof Model]: Model[key] | null;
 }
 
 export function convertToNullableSchema<T>(
-  schema: ModelSchema<T>,
-): ModelSchema<ValueNullable<T>> {
+  schema: ObjectSchema<T>,
+): ObjectSchema<ValueNullable<T>> {
   return mapValues(
     (schema: Schema<T[keyof T]>, key: keyof T) => {
       return anyOf(schema, nil())

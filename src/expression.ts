@@ -1,5 +1,4 @@
 import { Schema, number, integer, boolean } from 'sukima'
-// import { Value } from 'knex'
 
 import { flatten } from './utils'
 

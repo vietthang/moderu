@@ -1,6 +1,6 @@
-import { PropertyMap } from 'sukima'
+import { PropertyMap, ObjectSchema } from 'sukima'
 
-import { ValueNullable, ModelSchema } from './common'
+import { ValueNullable } from './common'
 import { DataSetCore, DataSet, ColumnMap, makeDataSet } from './dataSet'
 import { AnyExpression } from './expression'
 import { makeJoinedTable, JoinedTable } from './combinedTable'
@@ -17,7 +17,7 @@ export interface TableCore<Model, Name extends string, ID extends keyof Model> e
 
     readonly name: Name,
 
-    readonly schema: ModelSchema<Model>,
+    readonly schema: ObjectSchema<Model>,
 
     readonly tableName: string,
 

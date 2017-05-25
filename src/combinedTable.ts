@@ -1,10 +1,12 @@
+import { ObjectSchema } from 'sukima'
+
 import { mapValues } from './utils'
-import { ModelSchema, convertToNullableSchema, toPartial, toMappedValue, ValueNullable } from './common'
+import { convertToNullableSchema, toPartial, toMappedValue, ValueNullable } from './common'
 import { AnyExpression } from './expression'
 import { Joinable, Table } from './table'
 
 export type SchemaMap<CombinedModel> = {
-  [key in keyof CombinedModel]: ModelSchema<CombinedModel[key]>
+  [key in keyof CombinedModel]: ObjectSchema<CombinedModel[key]>
 }
 
 export type JoinEntryType = 'inner' | 'left' | 'right' | 'full'
@@ -52,7 +54,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
     table: Table<JoinModel, Name, any>,
     expression: AnyExpression,
   ): JoinedTable<CombinedModel & { [name in Name]: ValueNullable<JoinModel> }> {
-    const rightPropertyMap = toMappedValue<Name, ModelSchema<ValueNullable<JoinModel>>>(
+    const rightPropertyMap = toMappedValue<Name, ObjectSchema<ValueNullable<JoinModel>>>(
       table.meta.name,
       convertToNullableSchema(table.meta.schema),
     )
@@ -78,13 +80,13 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
     expression: AnyExpression,
   ): JoinedTable<{ [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> } & { [key in Name]: JoinModel }> {
     const leftPropertyMap = mapValues(
-      (schema: ModelSchema<CombinedModel[keyof CombinedModel]>) => {
+      (schema: ObjectSchema<CombinedModel[keyof CombinedModel]>) => {
         return convertToNullableSchema(schema)
       },
       this.schemaMap as any,
     ) as { [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> }
 
-    const rightPropertyMap = toMappedValue<Name, ModelSchema<JoinModel>>(table.meta.name, table.meta.schema)
+    const rightPropertyMap = toMappedValue<Name, ObjectSchema<JoinModel>>(table.meta.name, table.meta.schema)
 
     return new JoinedTable<CombinedModel & { [name in Name]: JoinModel }>(
       Object.assign(
@@ -110,13 +112,13 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
     & { [key in Name]: ValueNullable<JoinModel> }
   > {
     const leftPropertyMap = mapValues(
-      (propertyMap: ModelSchema<CombinedModel[keyof CombinedModel]>) => {
+      (propertyMap: ObjectSchema<CombinedModel[keyof CombinedModel]>) => {
         return convertToNullableSchema(propertyMap)
       },
       this.schemaMap as any,
     ) as { [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> }
 
-    const rightPropertyMap = toMappedValue<Name, ModelSchema<ValueNullable<JoinModel>>>(
+    const rightPropertyMap = toMappedValue<Name, ObjectSchema<ValueNullable<JoinModel>>>(
       table.meta.name,
       convertToNullableSchema(table.meta.schema),
     )
@@ -145,7 +147,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
 export function makeJoinedTable<Model, Name extends string>(
   tableName: string,
   name: Name,
-  schema: ModelSchema<Model>,
+  schema: ObjectSchema<Model>,
 ): JoinedTable<{ [key in Name]: Model }> {
   return new JoinedTable<{ [key in Name]: Model }>(
     toMappedValue(name, schema),

@@ -1,8 +1,7 @@
-import { PropertyMap, object } from 'sukima'
+import { PropertyMap, object, ObjectSchema } from 'sukima'
 
 import { Selector } from './selector'
 import { Column, makeColumn } from './column'
-import { ModelSchema } from './common'
 
 export type ColumnMap<Model, Key extends keyof Model, Name extends string> = {
 
@@ -14,7 +13,7 @@ export interface DataSetCore<Model, Name extends string> {
 
   readonly meta: {
 
-    readonly schema: ModelSchema<Model>,
+    readonly schema: ObjectSchema<Model>,
 
     readonly name: Name,
 

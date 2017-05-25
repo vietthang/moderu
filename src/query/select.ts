@@ -74,7 +74,7 @@ function buildItemSchema<Model>(props: BaseSelectQueryProps<Model>): Schema<Mode
   return object<any>({
     ...columnsMapping,
     _: object(extraColumnsMapping).optional(),
-  }).additionalProperties(false)
+  })
 }
 
 export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {}>
