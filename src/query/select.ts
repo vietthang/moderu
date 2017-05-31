@@ -73,7 +73,7 @@ function buildItemSchema<Model>(props: BaseSelectQueryProps<Model>): Schema<Mode
 
   return object<any>({
     ...columnsMapping,
-    _: object(extraColumnsMapping).optional(),
+    _: object(extraColumnsMapping),
   })
 }
 
@@ -307,6 +307,73 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   }
 
   /** @internal */
+  buildResult(result: any): any {
+    return result.map((entry: any) => {
+      const keys = Object.keys(entry)
+      const base: any = Object.assign(
+        {
+          _: {},
+          [this.props.from.base.table.meta.name]: {},
+        },
+        ...(this.props.from.join.map(entry => ({ [entry.table.meta.name]: {} }))),
+      )
+      const tables = this.props.from.join.map(entry => entry.table).concat(this.props.from.base.table)
+
+      const mappedRaw = keys.reduce(
+        (prev, key) => {
+          const parts = key.match(/^\$_([a-zA-Z0-9]+)_([a-zA-Z0-9]+)$/)
+
+          if (parts === null) {
+            return Object.assign(
+              {},
+              prev,
+              {
+                _: Object.assign(
+                  {},
+                  prev._,
+                  { [key]: entry[key] },
+                ),
+              },
+            )
+          }
+
+          const namespace = parts[1]
+          const field = parts[2]
+
+          return Object.assign(
+            {},
+            prev,
+            {
+              [namespace]: Object.assign(
+                {},
+                prev[namespace],
+                { [field]: entry[key] },
+              ),
+            },
+          )
+        },
+        base,
+      )
+
+      return tables.reduce<any>(
+        (prev, table) => {
+          if (!table.meta.parse) {
+            return prev
+          }
+
+          const name = table.meta.name
+
+          return {
+            ...prev,
+            [name]: table.meta.parse(prev[name]),
+          }
+        },
+        mappedRaw,
+      )
+    })
+  }
+
+  /** @internal */
   protected buildQuery(query: QueryInterface): QueryBuilder {
     const {
       from,
@@ -320,14 +387,14 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
       offset,
     } = this.props
 
-    let qb = query.from(from.base.tableName).as(from.base.alias)
+    let qb = query.from(from.base.table.meta.tableName).as(from.base.table.meta.name)
 
     qb = from.join.reduce(
       (qb, entry) => {
         const raw = makeKnexRaw(
           query,
           `?? ?? ON ${entry.expression.sql}`,
-          [entry.tableName, entry.alias, ...entry.expression.bindings],
+          [entry.table.meta.tableName, entry.table.meta.name, ...entry.expression.bindings],
           true,
         )
 
@@ -408,48 +475,6 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
     }
 
     return qb
-  }
-
-  protected buildResult(result: any): any {
-    return result.map((entry: any) => {
-      const keys = Object.keys(entry)
-
-      return keys.reduce(
-        (prev, key) => {
-          const parts = key.match(/^\$_([a-zA-Z0-9]+)_([a-zA-Z0-9]+)$/)
-
-          if (parts === null) {
-            return Object.assign(
-              {},
-              prev,
-              {
-                _: Object.assign(
-                  {},
-                  prev._,
-                  { [key]: entry[key] },
-                ),
-              },
-            )
-          }
-
-          const namespace = parts[1]
-          const field = parts[2]
-
-          return Object.assign(
-            {},
-            prev,
-            {
-              [namespace]: Object.assign(
-                {},
-                prev[namespace],
-                { [field]: entry[key] },
-              ),
-            },
-          )
-        },
-        {} as any,
-      )
-    })
   }
 
   /** @internal */

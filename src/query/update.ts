@@ -14,11 +14,7 @@ import { applyMixins } from '../utils/applyMixins'
 export type UpdateQueryProps<Model> =
   QueryProps<number> &
   ModifiableQueryProps<Model> &
-  ConditionalQueryProps & {
-
-    tableName: string;
-
-  }
+  ConditionalQueryProps
 
 export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
   extends Query<number, UpdateQueryProps<Model>>
@@ -52,13 +48,13 @@ export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
           table.meta.schema.getPropertyMap(),
         ),
       ),
-      tableName: table.meta.tableName,
+      table: table,
     })
   }
 
   /** @internal */
   protected buildQuery(query: QueryInterface): QueryBuilder {
-    const { where, model, tableName } = this.props
+    const { where, model, table } = this.props
 
     if (!model) {
       throw new Error('Update without any model.')
@@ -75,7 +71,7 @@ export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
       model as any,
     )
 
-    const builder = query.table(tableName).update(rawModel)
+    const builder = query.table(table.meta.tableName).update(rawModel)
 
     if (where) {
       return builder.where(makeKnexRaw(query, where.sql, where.bindings, false))

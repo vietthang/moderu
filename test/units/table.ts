@@ -7,17 +7,17 @@ import { defineTable } from '../../src/table'
 import { convertToNullableSchema } from '../../src/common'
 import { Expression } from '../../src/expression'
 
-const petTable = defineTable(
-  'Pet',
-  petPropertyMap,
-  'id',
-)
+const petTable = defineTable({
+  name: 'Pet',
+  properties: petPropertyMap,
+  idAttribute: 'id',
+})
 
-const userTable = defineTable(
-  'User',
-  userPropertyMap,
-  'id',
-)
+const userTable = defineTable({
+  name: 'User',
+  properties: userPropertyMap,
+  idAttribute: 'id',
+})
 
 it('Should create table correctly', () => {
   assert.equal(petTable.meta.idAttribute, 'id')
@@ -39,13 +39,11 @@ describe('Test tables joining', () => {
           User: userTable.meta.schema,
         },
         base: {
-          tableName: 'Pet',
-          alias: 'Pet',
+          table: petTable,
         },
         join: [
           {
-            tableName: 'User',
-            alias: 'User',
+            table: userTable,
             type: 'inner',
             expression: joinExpression,
           },
@@ -56,7 +54,8 @@ describe('Test tables joining', () => {
 
   it('Should create JoinedTable with inner join with table alias correctly', () => {
     const joinExpression = new Expression<any>('1', [], integer())
-    const joinedTable = petTable.innerJoin(userTable.as('Owner'), joinExpression)
+    const userTableAlias = userTable.as('Owner')
+    const joinedTable = petTable.innerJoin(userTableAlias, joinExpression)
 
     assert.deepEqual(
       joinedTable,
@@ -66,13 +65,11 @@ describe('Test tables joining', () => {
           Owner: userTable.meta.schema,
         },
         base: {
-          tableName: 'Pet',
-          alias: 'Pet',
+          table: petTable,
         },
         join: [
           {
-            tableName: 'User',
-            alias: 'Owner',
+            table: userTableAlias,
             type: 'inner',
             expression: joinExpression,
           },
@@ -93,13 +90,11 @@ describe('Test tables joining', () => {
           User: convertToNullableSchema(userTable.meta.schema),
         },
         base: {
-          tableName: 'Pet',
-          alias: 'Pet',
+          table: petTable,
         },
         join: [
           {
-            tableName: 'User',
-            alias: 'User',
+            table: userTable,
             type: 'left',
             expression: joinExpression,
           },
@@ -120,13 +115,11 @@ describe('Test tables joining', () => {
           User: userTable.meta.schema,
         },
         base: {
-          tableName: 'Pet',
-          alias: 'Pet',
+          table: petTable,
         },
         join: [
           {
-            tableName: 'User',
-            alias: 'User',
+            table: userTable,
             type: 'right',
             expression: joinExpression,
           },
@@ -147,13 +140,11 @@ describe('Test tables joining', () => {
           User: convertToNullableSchema(userTable.meta.schema),
         },
         base: {
-          tableName: 'Pet',
-          alias: 'Pet',
+          table: petTable,
         },
         join: [
           {
-            tableName: 'User',
-            alias: 'User',
+            table: userTable,
             type: 'full',
             expression: joinExpression,
           },

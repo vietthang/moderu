@@ -8,11 +8,11 @@ import { defineTable } from '../../../src/table'
 import { InsertQuery } from '../../../src/query/insert'
 import { Expression } from '../../../src/expression'
 
-const petTable = defineTable(
-  'Pet',
-  petPropertyMap,
-  'id',
-)
+const petTable = defineTable({
+  name: 'Pet',
+  properties: petPropertyMap,
+  idAttribute: 'id',
+})
 
 const knex = Knex({
   client: 'sqlite3',

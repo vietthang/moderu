@@ -10,12 +10,11 @@ import { ModifiableQuery, ModifiableQueryProps, ModifiableModel } from './modifi
 import { applyMixins } from '../utils/applyMixins'
 import { Table } from '../table'
 
-export type InsertQueryProps<Model, Id extends keyof Model>
-  = QueryProps<Model[Id] | null>
+export type InsertQueryProps<Model, ID extends keyof Model>
+  = QueryProps<Model[ID] | null>
   & ModifiableQueryProps<Model>
   & {
-    readonly tableName: string,
-    readonly idAttribute: Id,
+    readonly table: Table<Model, string, ID>,
   }
 
 export class InsertQuery<Model, Name extends string, ID extends keyof Model>
@@ -43,14 +42,18 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
           table.meta.schema.getPropertyMap(),
         ),
       ),
-      tableName: table.meta.tableName,
-      idAttribute: table.meta.idAttribute,
+      table,
     })
   }
 
   /** @internal */
+  buildResult(result: any): any {
+    return result.length ? result[0] : null
+  }
+
+  /** @internal */
   protected buildQuery(query: QueryInterface): QueryBuilder {
-    const { model, tableName, idAttribute } = this.props
+    const { model, table } = this.props
 
     if (!model) {
       throw new Error('Insert without any model.')
@@ -67,12 +70,7 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
       model,
     )
 
-    return query.table(tableName).insert(rawModel).returning(idAttribute)
-  }
-
-  /** @internal */
-  protected buildResult(result: any): any {
-    return result.length ? result[0] : null
+    return query.table(table.meta.tableName).insert(rawModel).returning(table.meta.idAttribute)
   }
 
 }

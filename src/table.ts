@@ -23,6 +23,10 @@ export interface TableCore<Model, Name extends string, ID extends keyof Model> e
 
     readonly idAttribute: ID,
 
+    readonly format?: (model: Partial<Model>) => any,
+
+    readonly parse?: (raw: any) => Partial<Model>,
+
   },
 
   as<Alias extends string>(alias: Alias): Table<Model, Alias, ID>
@@ -61,19 +65,29 @@ export interface Joinable<CombinedModel> {
 
 }
 
+export interface TableDefinition<Model, Name extends string, ID extends keyof Model> {
+
+  name: Name
+
+  properties: PropertyMap<Model>
+
+  idAttribute: ID
+
+  format?: (model: Partial<Model>) => any
+
+  parse?: (raw: any) => Partial<Model>
+
+}
+
 function defineTableWithAlias<Model, Name extends string, ID extends keyof Model>(
+  { name, properties, idAttribute, format, parse }: TableDefinition<Model, Name, ID>,
   tableName: string,
-  propertyMap: PropertyMap<Model>,
-  idAttribute: ID,
-  name: Name,
 ): Table<Model, Name, ID> {
   type CombinedModel = { [key in Name]: Model }
 
-  const ret = makeDataSet(name, propertyMap, {})
+  const ret = makeDataSet(name, properties, {})
 
-  const { schema } = ret.meta
-
-  return Object.assign(
+  const table = Object.assign(
     ret,
     {
 
@@ -83,52 +97,57 @@ function defineTableWithAlias<Model, Name extends string, ID extends keyof Model
         {
           tableName,
           idAttribute,
+          format,
+          parse,
         },
       ),
 
       as<Alias extends string>(alias: Alias): Table<Model, Alias, ID> {
-        return defineTableWithAlias<Model, Alias, ID>(tableName, propertyMap, idAttribute, alias)
+        return defineTableWithAlias<Model, Alias, ID>(
+          { properties, idAttribute, name: alias },
+          tableName,
+        )
       },
 
       innerJoin<JoinModel, JoinModelName extends string>(
-        table: Table<JoinModel, JoinModelName, any>,
+        joinTable: Table<JoinModel, JoinModelName, any>,
         expression: AnyExpression,
       ): JoinedTable<CombinedModel & { [name in JoinModelName]: JoinModel }> {
-        return makeJoinedTable(tableName, name, schema).innerJoin(table, expression)
+        return makeJoinedTable(table).innerJoin(joinTable, expression)
       },
 
       leftJoin<JoinModel, JoinModelName extends string>(
-        table: Table<JoinModel, JoinModelName, any>,
+        joinTable: Table<JoinModel, JoinModelName, any>,
         expression: AnyExpression,
       ): JoinedTable<CombinedModel & { [name in JoinModelName]: ValueNullable<JoinModel> }> {
-        return makeJoinedTable(tableName, name, schema).leftJoin(table, expression)
+        return makeJoinedTable(table).leftJoin(joinTable, expression)
       },
 
       rightJoin<JoinModel, Name extends string>(
-        table: Table<JoinModel, Name, any>,
+        joinTable: Table<JoinModel, Name, any>,
         expression: AnyExpression,
       ): JoinedTable<{ [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> } & { [key in Name]: JoinModel }> {
-        return makeJoinedTable(tableName, name, schema).rightJoin(table, expression)
+        return makeJoinedTable(table).rightJoin(joinTable, expression)
       },
 
       fullOuterJoin<JoinModel, Name extends string>(
-        table: Table<JoinModel, Name, any>,
+        joinTable: Table<JoinModel, Name, any>,
         expression: AnyExpression,
       ): JoinedTable<
         { [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> }
         & { [key in Name]: ValueNullable<JoinModel> }
       > {
-        return makeJoinedTable(tableName, name, schema).fullOuterJoin(table, expression)
+        return makeJoinedTable(table).fullOuterJoin(joinTable, expression)
       },
 
     },
   )
+
+  return table
 }
 
 export function defineTable<Model, Name extends string, ID extends keyof Model>(
-  name: Name,
-  propertyMap: PropertyMap<Model>,
-  idAttribute: ID,
+  definition: TableDefinition<Model, Name, ID>,
 ): Table<Model, Name, ID> {
-  return defineTableWithAlias<Model, Name, ID>(name, propertyMap, idAttribute, name)
+  return defineTableWithAlias<Model, Name, ID>(definition, definition.name)
 }

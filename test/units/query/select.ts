@@ -1,17 +1,41 @@
 import 'mocha'
 import * as assert from 'assert'
-import { object } from 'sukima'
 import Knex = require('knex')
 
-import { petPropertyMap } from '../../common'
+import { petPropertyMap, userPropertyMap, pluginPropertyMap } from '../../common'
 import { defineTable } from '../../../src/table'
 import { makeJoinedTable } from '../../../src/combinedTable'
 import { SelectQuery } from '../../../src/query/select'
 
-const Pet = defineTable('Pet', petPropertyMap, 'id')
-const PetSelectable = makeJoinedTable('Pet', 'Pet', object(petPropertyMap))
+const Pet = defineTable({
+  name: 'Pet',
+  properties: petPropertyMap,
+  idAttribute: 'id',
+})
 
-const User = defineTable('User', petPropertyMap, 'id')
+const Plugin = defineTable({
+  name: 'Plugin',
+  properties: pluginPropertyMap,
+  idAttribute: 'id',
+  parse: (raw) => {
+    if (raw.extra) {
+      raw = {
+        ...raw,
+        extra: JSON.parse(raw.extra),
+      }
+    }
+
+    return raw
+  },
+})
+
+const PetSelectable = makeJoinedTable(Pet)
+
+const User = defineTable({
+  name: 'User',
+  properties: userPropertyMap,
+  idAttribute: 'id',
+})
 
 const knex = Knex({
   client: 'sqlite3',
@@ -163,5 +187,25 @@ describe('Test BaseSelectQuery class', () => {
       sql,
       'select "Pet"."id" AS "$_Pet_id", "User"."id" AS "$_User_id" from "Pet" full outer join "User" "User" ON "Pet"."ownerId" = "User"."id"',
     )
+  })
+})
+
+describe('Test SelectQuery buildResult function', () => {
+  it('Should build result from raw object fine', () => {
+    const query = new SelectQuery(makeJoinedTable(Plugin))
+      .columnsWithin(Plugin, Plugin.id, Plugin.name, Plugin.extra)
+
+    const results = query.buildResult([{
+      '$_Plugin_id': 1,
+      '$_Plugin_name': 'Test',
+      '$_Plugin_extra': '{ "foo": "bar" }',
+    }])
+
+    assert.deepEqual(results, [
+      {
+        _: {},
+        Plugin: { id: 1, name: 'Test', extra: { foo: 'bar' } },
+      },
+    ])
   })
 })

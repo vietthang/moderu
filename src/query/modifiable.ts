@@ -5,12 +5,14 @@ import { Expression } from '../expression'
 import { Extendable } from './extendable'
 import { applyMixins } from '../utils/applyMixins'
 import { toPartial } from '../common'
+import { Table } from '../table'
 
 export type ModifiableModel<Model> = Partial<{ [K in keyof Model]: (Expression<Model[K]> | Model[K]) }>
 
 export type ModifiableQueryProps<Model> = {
-  model?: ModifiableModel<Model>;
-  inputSchema: Schema<Partial<Model>>;
+  table: Table<Model, any, any>,
+  model?: ModifiableModel<Model>,
+  inputSchema: Schema<Partial<Model>>,
 }
 
 export class ModifiableQuery<
@@ -31,10 +33,13 @@ export class ModifiableQuery<
 
   setAttributes(model: Partial<Model>): this {
     const result = validate(this.props.inputSchema, model)
+    const { format } = this.props.table.meta
 
     return result.cata(
       (error) => { throw error },
-      (model) => this.setAttributesUnsafe(model),
+      (model) => this.setAttributesUnsafe(
+        format ? format(model) : model,
+      ),
     )
   }
 

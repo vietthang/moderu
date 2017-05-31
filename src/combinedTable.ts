@@ -12,8 +12,7 @@ export type SchemaMap<CombinedModel> = {
 export type JoinEntryType = 'inner' | 'left' | 'right' | 'full'
 
 export interface BaseJoinEntry {
-  tableName: string
-  alias: string
+  table: Table<any, any, any>
 }
 
 export interface JoinEntry extends BaseJoinEntry {
@@ -42,11 +41,10 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
       ) as any,
       this.base,
       this.join.concat({
-        tableName: table.meta.tableName,
-        alias: table.meta.name,
+        table: table as any,
         type: 'inner',
         expression,
-      }),
+      } as JoinEntry),
     )
   }
 
@@ -67,8 +65,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
       ) as any,
       this.base,
       this.join.concat({
-        tableName: table.meta.tableName,
-        alias: table.meta.name,
+        table: table as any,
         type: 'left',
         expression,
       }),
@@ -96,8 +93,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
       ) as any,
       this.base,
       this.join.concat({
-        tableName: table.meta.tableName,
-        alias: table.meta.name,
+        table: table as any,
         type: 'right',
         expression,
       }),
@@ -134,8 +130,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
       ),
       this.base,
       this.join.concat({
-        tableName: table.meta.tableName,
-        alias: table.meta.name,
+        table: table as any,
         type: 'full',
         expression,
       }),
@@ -145,15 +140,12 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
 }
 
 export function makeJoinedTable<Model, Name extends string>(
-  tableName: string,
-  name: Name,
-  schema: ObjectSchema<Model>,
+  table: Table<Model, Name, any>,
 ): JoinedTable<{ [key in Name]: Model }> {
   return new JoinedTable<{ [key in Name]: Model }>(
-    toMappedValue(name, schema),
+    toMappedValue(table.meta.name, table.meta.schema),
     {
-      tableName,
-      alias: name,
+      table: table as any,
     },
   )
 }

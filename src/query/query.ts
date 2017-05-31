@@ -51,12 +51,12 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   }
 
   /** @internal */
-  protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
-
-  /** @internal */
-  protected buildResult(result: any): any {
+  buildResult(result: any): any {
     return result
   }
+
+  /** @internal */
+  protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
 
   /** @internal */
   protected buildSchema(): Schema<Value> {

@@ -6,11 +6,11 @@ import { petPropertyMap } from '../../common'
 import { defineTable } from '../../../src/table'
 import { DeleteQuery } from '../../../src/query/delete'
 
-const petTable = defineTable(
-  'Pet',
-  petPropertyMap,
-  'id',
-)
+const petTable = defineTable({
+  name: 'Pet',
+  properties: petPropertyMap,
+  idAttribute: 'id',
+})
 
 const knex = Knex({
   client: 'sqlite3',

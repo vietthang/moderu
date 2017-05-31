@@ -11,7 +11,7 @@ export function select<Model, Name extends string>(
   table: Table<Model, Name, any>,
 ): SelectQuery<{ [key in Name]: Model }, {}, { [key in Name]: Model }> {
   return new SelectQuery<{ [key in Name]: Model }, {}, { [key in Name]: Model }>(
-    makeJoinedTable(table.meta.tableName, table.meta.name, table.meta.schema),
+    makeJoinedTable(table),
   )
 }
 
