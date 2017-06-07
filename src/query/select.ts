@@ -165,7 +165,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 },
+    & { _: { [key in K1]: V1 } },
     {}
   >
 
@@ -178,8 +178,8 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 }
-    & { [key in K2]: V2 },
+    & { _: { [key in K1]: V1 } }
+    & { _: { [key in K2]: V2 } },
     {}
   >
 
@@ -194,9 +194,9 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 }
-    & { [key in K2]: V2 }
-    & { [key in K3]: V3 },
+    & { _: { [key in K1]: V1 } }
+    & { _: { [key in K2]: V2 } }
+    & { _: { [key in K3]: V3 } },
     {}
   >
 
@@ -213,10 +213,10 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 }
-    & { [key in K2]: V2 }
-    & { [key in K3]: V3 }
-    & { [key in K4]: V4 },
+    & { _: { [key in K1]: V1 } }
+    & { _: { [key in K2]: V2 } }
+    & { _: { [key in K3]: V3 } }
+    & { _: { [key in K4]: V4 } },
     {}
   >
 
@@ -235,11 +235,11 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 }
-    & { [key in K2]: V2 }
-    & { [key in K3]: V3 }
-    & { [key in K4]: V4 }
-    & { [key in K5]: V5 },
+    & { _: { [key in K1]: V1 } }
+    & { _: { [key in K2]: V2 } }
+    & { _: { [key in K3]: V3 } }
+    & { _: { [key in K4]: V4 } }
+    & { _: { [key in K5]: V5 } },
     {}
   >
 
@@ -260,12 +260,12 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 }
-    & { [key in K2]: V2 }
-    & { [key in K3]: V3 }
-    & { [key in K4]: V4 }
-    & { [key in K5]: V5 }
-    & { [key in K6]: V6 },
+    & { _: { [key in K1]: V1 } }
+    & { _: { [key in K2]: V2 } }
+    & { _: { [key in K3]: V3 } }
+    & { _: { [key in K4]: V4 } }
+    & { _: { [key in K5]: V5 } }
+    & { _: { [key in K6]: V6 } },
     {}
   >
 
@@ -288,13 +288,13 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   ): SelectQuery<
     CombinedModel,
     Model
-    & { [key in K1]: V1 }
-    & { [key in K2]: V2 }
-    & { [key in K3]: V3 }
-    & { [key in K4]: V4 }
-    & { [key in K5]: V5 }
-    & { [key in K6]: V6 }
-    & { [key in K7]: V7 },
+    & { _: { [key in K1]: V1 } }
+    & { _: { [key in K2]: V2 } }
+    & { _: { [key in K3]: V3 } }
+    & { _: { [key in K4]: V4 } }
+    & { _: { [key in K5]: V5 } }
+    & { _: { [key in K6]: V6 } }
+    & { _: { [key in K7]: V7 } },
     {}
   >
 
