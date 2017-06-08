@@ -57,7 +57,7 @@ describe('Test Query class', () => {
     mockDb.unmock(knex)
   })
 
-  it('Should create new instance build query correctly', async() => {
+  it('Should create new instance build query correctly', async () => {
     const instance = new MockClass(1)
     const { sql, bindings } = instance.toSQL(knex)
     assert.equal(sql, 'select "1"')
@@ -66,7 +66,7 @@ describe('Test Query class', () => {
     assert.equal(ret, 1)
   })
 
-  it('Should throw if result is invalid value and validate set is true, successed if skip validation', async() => {
+  it('Should throw if result is invalid value and validate set is true, successed if skip validation', async () => {
     const instance = new MockClass(-1)
     const { sql, bindings } = instance.toSQL(knex)
     assert.equal(sql, 'select "-1"')
