@@ -36,8 +36,12 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
     const raw = this.buildResult(await this.buildQuery(query))
 
     if (config.validateOutput) {
-      return validate(this.buildSchema(), raw).cata(
-        (error) => { throw error },
+      return validate(
+        this.buildSchema(),
+        raw,
+        { removeAdditional: true, useDefaults: false, coerce: false },
+      ).cata(
+        error => { throw error },
         value => value,
       )
     } else {
@@ -56,7 +60,7 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   }
 
   /** @internal */
-  protected abstract buildQuery(qb: QueryInterface): QueryBuilder;
+  protected abstract buildQuery(qb: QueryInterface): QueryBuilder
 
   /** @internal */
   protected buildSchema(): Schema<Value> {

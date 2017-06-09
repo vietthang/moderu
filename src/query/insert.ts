@@ -1,5 +1,5 @@
 import { QueryBuilder, QueryInterface } from 'knex'
-import { object } from 'sukima'
+import { object, compile } from 'sukima'
 
 import { mapValues } from '../utils'
 import { Column } from '../column'
@@ -36,11 +36,18 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
   constructor(table: Table<Model, Name, ID>) {
     super({
       schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute].nullable(),
-      inputSchema: object(
-        mapValues(
-          (schema: any) => schema.optional(),
-          table.meta.schema.getPropertyMap(),
+      inputValidateDelegate: compile(
+        object(
+          mapValues(
+            (schema: any) => schema.optional(),
+            table.meta.schema.getPropertyMap(),
+          ),
         ),
+        {
+          removeAdditional: true,
+          useDefaults: true,
+          coerce: false,
+        },
       ),
       table,
     })

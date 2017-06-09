@@ -17,6 +17,7 @@
         "method": "never",
         "constructor": "never"
       }
-    ]
+    ],
+    "await-promise": false
   }
 }

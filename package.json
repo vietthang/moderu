@@ -39,7 +39,7 @@
     "source-map-support": "^0.4.11",
     "sqlite3": "^3.1.8",
     "ts-node": "^2.1.0",
-    "tslint": "^4.4.2",
+    "tslint": "^5.4.3",
     "tslint-config-standard": "^5.0.2",
     "typescript": "^2.3.3"
   },

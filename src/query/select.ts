@@ -36,6 +36,7 @@ export type BaseSelectQueryProps<Model>
     readonly from: JoinedTable<any>;
     readonly columns: NamedExpression<any, any>[];
     readonly columnsWithin: ColumnWithinEntry[];
+    readonly allColumns: boolean;
   }
 
 function buildItemSchema<Model>(props: BaseSelectQueryProps<Model>): Schema<Model> {
@@ -77,6 +78,15 @@ function buildItemSchema<Model>(props: BaseSelectQueryProps<Model>): Schema<Mode
   })
 }
 
+function convertJoinedTableToColumnsWithin(dataSet: JoinedTable<any>): ColumnWithinEntry[] {
+  const tables = [dataSet.base.table].concat(dataSet.join.map(entry => entry.table))
+
+  return flatten(tables.map(table => ({
+    key: table.meta.name,
+    innerKeys: table.meta.keys,
+  })))
+}
+
 export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {}>
   extends Query<(Model & Default)[], BaseSelectQueryProps<Model & Default>>
   implements ConditionalQuery<BaseSelectQueryProps<Model & Default>> {
@@ -88,7 +98,8 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
       from: dataSet,
       schema: null as any,
       columns: [],
-      columnsWithin: [],
+      columnsWithin: convertJoinedTableToColumnsWithin(dataSet),
+      allColumns: true,
     })
   }
 
@@ -150,11 +161,16 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
       return this.columnsWithin(table, table)
     }
 
+    const { allColumns, columnsWithin } = this.props
+
+    const newEntry = {
+      key: table.meta.name,
+      innerKeys: flatten(columns.map((column) => column.meta.keys)),
+    }
+
     return this.extend({
-      columnsWithin: this.props.columnsWithin.concat({
-        key: table.meta.name,
-        innerKeys: flatten(columns.map((column) => column.meta.keys)),
-      }),
+      columnsWithin: allColumns ? [newEntry] : columnsWithin.concat(newEntry),
+      allColumns: false,
     }) as any
   }
 
@@ -300,9 +316,13 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
 
   columns(...columns: NamedExpression<any, any>[]): SelectQuery<CombinedModel, any, any>
 
-  columns(...columns: NamedExpression<any, any>[]): SelectQuery<CombinedModel, any, any> {
+  columns(...expressions: NamedExpression<any, any>[]): SelectQuery<CombinedModel, any, any> {
+    const { allColumns, columns, columnsWithin } = this.props
+
     return this.extend({
-      columns: this.props.columns.concat(columns),
+      columns: columns.concat(expressions),
+      columnsWithin: allColumns ? [] : columnsWithin,
+      allColumns: false,
     })
   }
 

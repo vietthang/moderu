@@ -17,6 +17,7 @@ const conditionSchema = boolean()
 export type Value<Type> = Type | Expression<Type>
 
 function getExpression<Type>(value: Value<Type>) {
+  // tslint:disable-next-line:no-use-before-declare
   if (value instanceof Expression) {
     return value.sql
   } else {
@@ -25,6 +26,7 @@ function getExpression<Type>(value: Value<Type>) {
 }
 
 function getBindings<Type>(value: Value<Type>) {
+  // tslint:disable-next-line:no-use-before-declare
   if (value instanceof Expression) {
     return value.bindings
   } else {

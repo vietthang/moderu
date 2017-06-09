@@ -73,9 +73,9 @@ export interface TableDefinition<Model, Name extends string, ID extends keyof Mo
 
   idAttribute: ID
 
-  format?: (model: Partial<Model>) => any
+  format?: (model: any) => any
 
-  parse?: (raw: any) => Partial<Model>
+  parse?: (raw: any) => any
 
 }
 

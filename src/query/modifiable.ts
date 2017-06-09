@@ -1,4 +1,4 @@
-import { Schema, validate } from 'sukima'
+import { Validator } from 'sukima/validate'
 
 import { Column } from '../column'
 import { Expression } from '../expression'
@@ -12,7 +12,7 @@ export type ModifiableModel<Model> = Partial<{ [K in keyof Model]: (Expression<M
 export type ModifiableQueryProps<Model> = {
   table: Table<Model, any, any>,
   model?: ModifiableModel<Model>,
-  inputSchema: Schema<Partial<Model>>,
+  inputValidateDelegate: Validator<Partial<Model>>,
 }
 
 export class ModifiableQuery<
@@ -32,7 +32,7 @@ export class ModifiableQuery<
   }
 
   setAttributes(model: Partial<Model>): this {
-    const result = validate(this.props.inputSchema, model)
+    const result = this.props.inputValidateDelegate(model)
     const { format } = this.props.table.meta
 
     return result.cata(

@@ -1,4 +1,4 @@
-import { integer, object } from 'sukima'
+import { integer, object, compile } from 'sukima'
 import { QueryBuilder, QueryInterface } from 'knex'
 
 import { mapValues } from '../utils'
@@ -42,11 +42,18 @@ export class UpdateQuery<Model, Name extends string, ID extends keyof Model>
   ) {
     super({
       schema: UpdateQuery.schema,
-      inputSchema: object(
-        mapValues(
-          (schema: any) => schema.optional(),
-          table.meta.schema.getPropertyMap(),
+      inputValidateDelegate: compile(
+        object(
+          mapValues(
+            (schema: any) => schema.optional(),
+            table.meta.schema.getPropertyMap(),
+          ),
         ),
+        {
+          removeAdditional: true,
+          useDefaults: false,
+          coerce: false,
+        },
       ),
       table: table,
     })

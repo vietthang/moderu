@@ -81,28 +81,28 @@ describe('Test BaseSelectQuery class', () => {
     const query = new SelectQuery(PetSelectable).limit(10)
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, [10])
-    assert.equal(sql, 'select * from "Pet" limit ?')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" limit ?')
   })
 
   it('Should generate correct select statement with offset and limit', () => {
     const query = new SelectQuery(PetSelectable).limit(20).offset(10)
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, [20, 10])
-    assert.equal(sql, 'select * from "Pet" limit ? offset ?')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" limit ? offset ?')
   })
 
   it('Should generate correct select statement with orderBy', () => {
     const query = new SelectQuery(PetSelectable).orderBy(Pet.name)
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, [])
-    assert.equal(sql, 'select * from "Pet" order by "Pet"."name" asc')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" order by "Pet"."name" asc')
   })
 
   it('Should generate correct select statement with groupBy', () => {
     const query = new SelectQuery(PetSelectable).groupBy(Pet.name)
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, [])
-    assert.equal(sql, 'select * from "Pet" group by "Pet"."name"')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" group by "Pet"."name"')
   })
 
   it('Should generate correct select statement with where', () => {
@@ -111,7 +111,7 @@ describe('Test BaseSelectQuery class', () => {
 
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, ['Awesome'])
-    assert.equal(sql, 'select * from "Pet" where "Pet"."name" = ?')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" where "Pet"."name" = ?')
   })
 
   it('Should generate correct select statement with having', () => {
@@ -120,7 +120,7 @@ describe('Test BaseSelectQuery class', () => {
 
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, [10])
-    assert.equal(sql, 'select * from "Pet" having COUNT("Pet"."name") = ?')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" having COUNT("Pet"."name") = ?')
   })
 
   it('Should generate correct select statement with multiple having', () => {
@@ -130,7 +130,7 @@ describe('Test BaseSelectQuery class', () => {
 
     const { sql, bindings } = query.toSQL(knex)
     assert.deepEqual(bindings, [10, 10])
-    assert.equal(sql, 'select * from "Pet" having COUNT("Pet"."name") = ? AND (COUNT("Pet"."id") = ?)')
+    assert.equal(sql, 'select "Pet"."id" AS "$_Pet_id", "Pet"."ownerId" AS "$_Pet_ownerId", "Pet"."name" AS "$_Pet_name", "Pet"."updated" AS "$_Pet_updated" from "Pet" having COUNT("Pet"."name") = ? AND (COUNT("Pet"."id") = ?)')
   })
 
   it('Should generate correct select statement with inner join', () => {
