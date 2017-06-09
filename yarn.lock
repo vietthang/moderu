@@ -25,9 +25,20 @@ abbrev@1, abbrev@1.0.x:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.0.9.tgz#91b4792588a7738c25f35dd6f63752a2f8776135"
 
-ajv@^4.11.5, ajv@^4.9.1:
+ajv-errors@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ajv-errors/-/ajv-errors-1.0.0.tgz#ecf021fa108fd17dfb5e6b383f2dd233e31ffc59"
+
+ajv@^4.9.1:
   version "4.11.5"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-4.11.5.tgz#b6ee74657b993a01dce44b7944d56f485828d5bd"
+  dependencies:
+    co "^4.6.0"
+    json-stable-stringify "^1.0.1"
+
+ajv@^5.1.5:
+  version "5.1.5"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.1.5.tgz#8734931b601f00d4feef7c65738d77d1b65d1f68"
   dependencies:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
@@ -225,13 +236,6 @@ boom@2.x.x:
   resolved "https://registry.yarnpkg.com/boom/-/boom-2.10.1.tgz#39c8918ceff5799f83f9492a848f625add0c766f"
   dependencies:
     hoek "2.x.x"
-
-brace-expansion@^1.0.0:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.6.tgz#7197d7eaa9b87e648390ea61fc66c84427420df9"
-  dependencies:
-    balanced-match "^0.4.1"
-    concat-map "0.0.1"
 
 brace-expansion@^1.1.7:
   version "1.1.7"
@@ -1258,13 +1262,7 @@ mime-types@^2.1.12, mime-types@~2.1.7:
   dependencies:
     mime-db "~1.27.0"
 
-"minimatch@2 || 3", minimatch@^3.0.0, minimatch@^3.0.2:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.3.tgz#2a4e4090b96b2db06a9d7df01055a62a77c9b774"
-  dependencies:
-    brace-expansion "^1.0.0"
-
-minimatch@^3.0.4:
+"minimatch@2 || 3", minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
   dependencies:
@@ -1703,11 +1701,11 @@ resolve-from@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-2.0.0.tgz#9480ab20e94ffa1d9e80a804c7ea147611966b57"
 
-resolve@1.1.x, resolve@^1.1.6, resolve@^1.1.7:
+resolve@1.1.x:
   version "1.1.7"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.1.7.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
 
-resolve@^1.3.2:
+resolve@^1.1.6, resolve@^1.1.7, resolve@^1.3.2:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.3.3.tgz#655907c3469a8680dc2de3a275a8fdd69691f0e5"
   dependencies:
@@ -1868,11 +1866,12 @@ strip-json-comments@^2.0.0, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-sukima@^0.14.4:
-  version "0.14.4"
-  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.14.4.tgz#683da334cc53d2946825c939fc366be23f6a67b3"
+sukima@^0.14.6:
+  version "0.14.6"
+  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.14.6.tgz#ef49bf6bf3fa1558ac04dd600eb571fd1764b3c2"
   dependencies:
-    ajv "^4.11.5"
+    ajv "^5.1.5"
+    ajv-errors "^1.0.0"
     monet "^0.8.10"
 
 supports-color@3.1.2, supports-color@^3.1.0, supports-color@^3.1.2:
