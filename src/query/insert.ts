@@ -55,7 +55,7 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
 
   /** @internal */
   buildResult(result: any): any {
-    return result.length ? result[0] : null
+    return result.length ? (result[0] || null) : null
   }
 
   /** @internal */
