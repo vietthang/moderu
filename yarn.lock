@@ -1866,9 +1866,9 @@ strip-json-comments@^2.0.0, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-sukima@^0.14.6:
-  version "0.14.6"
-  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.14.6.tgz#ef49bf6bf3fa1558ac04dd600eb571fd1764b3c2"
+sukima@^0.14.7:
+  version "0.14.7"
+  resolved "https://registry.yarnpkg.com/sukima/-/sukima-0.14.7.tgz#f89c63bbed024db35fe51cff008206e69d5ffeda"
   dependencies:
     ajv "^5.1.5"
     ajv-errors "^1.0.0"
