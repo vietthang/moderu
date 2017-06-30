@@ -10,6 +10,7 @@ import { Table } from '../table'
 import { JoinedTable } from '../combinedTable'
 import { Selector } from '../selector'
 import { makeKnexRaw } from '../utils/makeKnexRaw'
+import { ValueNullable } from '../common'
 
 export type SelectOrderByDirection = 'asc' | 'desc'
 
@@ -111,6 +112,33 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
       from: this.props.from.innerJoin(table, expression),
     }) as any
   }
+
+  leftJoin<JoinModel, Name extends string>(
+    table: Table<JoinModel, Name, any>,
+    expression: AnyExpression,
+  ): SelectQuery<CombinedModel & { [key in Name]: ValueNullable<JoinModel> }, Model, Default> {
+    return this.extend({
+      from: this.props.from.leftJoin(table, expression),
+    }) as any
+  }
+
+  // rightJoin<JoinModel, Name extends string>(
+  //   table: Table<JoinModel, Name, any>,
+  //   expression: AnyExpression,
+  // ): SelectQuery<CombinedModel & { [key in Name]: JoinModel }, Model, Default> {
+  //   return this.extend({
+  //     from: this.props.from.rightJoin(table, expression),
+  //   }) as any
+  // }
+
+  // outerJoin<JoinModel, Name extends string>(
+  //   table: Table<JoinModel, Name, any>,
+  //   expression: AnyExpression,
+  // ): SelectQuery<CombinedModel & { [key in Name]: JoinModel }, Model, Default> {
+  //   return this.extend({
+  //     from: this.props.from.fullOuterJoin(table, expression),
+  //   }) as any
+  // }
 
   having(condition: AnyExpression): this {
     return this.extend({ having: this.props.having ? this.props.having.and(condition) : condition })
