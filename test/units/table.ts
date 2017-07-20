@@ -10,17 +10,14 @@ import { Expression } from '../../src/expression'
 const petTable = defineTable({
   name: 'Pet',
   properties: petPropertyMap,
-  idAttribute: 'id',
 })
 
 const userTable = defineTable({
   name: 'User',
   properties: userPropertyMap,
-  idAttribute: 'id',
 })
 
 it('Should create table correctly', () => {
-  assert.equal(petTable.meta.idAttribute, 'id')
   assert.equal(petTable.meta.name, 'Pet')
   assert.equal(petTable.meta.tableName, 'Pet')
   assert.deepEqual(petTable.meta.schema, object(petPropertyMap))

@@ -14,7 +14,8 @@
     "noUnusedLocals": true,
     "removeComments": true,
     "stripInternal": true,
-    "declaration": true
+    "declaration": true,
+    "noStrictGenericChecks": true
   },
   "compileOnSave": false
 }

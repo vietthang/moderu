@@ -10,7 +10,7 @@ import { Table } from '../table'
 export type ModifiableModel<Model> = Partial<{ [K in keyof Model]: (Expression<Model[K]> | Model[K]) }>
 
 export type ModifiableQueryProps<Model> = {
-  table: Table<Model, any, any>,
+  table: Table<Model, any>,
   model?: ModifiableModel<Model>,
   inputValidateDelegate: Validator<Partial<Model>>,
 }

@@ -26,6 +26,7 @@ class MockClass extends Query<number, MockProps> {
     super({
       value,
       schema: integer().minimum(0),
+      transfomers: [],
     })
   }
 

@@ -9,7 +9,6 @@ import { DeleteQuery } from '../../../src/query/delete'
 const petTable = defineTable({
   name: 'Pet',
   properties: petPropertyMap,
-  idAttribute: 'id',
 })
 
 const knex = Knex({

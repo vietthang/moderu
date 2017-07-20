@@ -11,7 +11,6 @@ import { Expression } from '../../../src/expression'
 const petTable = defineTable({
   name: 'Pet',
   properties: petPropertyMap,
-  idAttribute: 'id',
 })
 
 const knex = Knex({

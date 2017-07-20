@@ -23,11 +23,12 @@ export class DeleteQuery<Model> extends Query<number, DeleteProps> implements Co
 
   /** @internal */
   constructor(
-    tableMeta: Table<Model, any, any>,
+    tableMeta: Table<Model, any>,
   ) {
     super({
       tableName: tableMeta.meta.tableName,
       schema: DeleteQuery.schema,
+      transfomers: [],
     })
   }
 

@@ -8,6 +8,7 @@ export type SchemaBuilder<Value> = () => Schema<Value>
 
 export type QueryProps<Value> = {
   schema: Schema<Value>,
+  transfomers: QueryTransformer[],
 }
 
 export interface Sql {
@@ -17,6 +18,10 @@ export interface Sql {
 
 export interface QueryConfig {
   validateOutput: boolean,
+}
+
+export interface QueryTransformer {
+  (query: QueryInterface): QueryBuilder
 }
 
 export abstract class Query<Value, Props extends QueryProps<Value>> implements Extendable<Props> {
@@ -33,7 +38,11 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
   }
 
   async execute(query: QueryInterface, config: QueryConfig = { validateOutput: true }): Promise<Value> {
-    const raw = this.buildResult(await this.buildQuery(query))
+    const finalQuery = this.props.transfomers.reduce(
+      (prevQuery, transformer) => transformer(prevQuery),
+      this.buildQuery(query),
+    )
+    const raw = this.buildResult(await finalQuery)
 
     if (config.validateOutput) {
       return validate(
@@ -47,6 +56,12 @@ export abstract class Query<Value, Props extends QueryProps<Value>> implements E
     } else {
       return raw
     }
+  }
+
+  transformQuery(transformer: QueryTransformer) {
+    return this.extend({
+      transfomers: this.props.transfomers.concat(transformer),
+    })
   }
 
   toSQL(query: QueryInterface): Sql {

@@ -12,7 +12,7 @@ export type SchemaMap<CombinedModel> = {
 export type JoinEntryType = 'inner' | 'left' | 'right' | 'full'
 
 export interface BaseJoinEntry {
-  table: Table<any, any, any>
+  table: Table<any, any>
 }
 
 export interface JoinEntry extends BaseJoinEntry {
@@ -30,7 +30,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
   }
 
   innerJoin<JoinModel, Name extends string>(
-    table: Table<JoinModel, Name, any>,
+    table: Table<JoinModel, Name>,
     expression: AnyExpression,
   ): JoinedTable<CombinedModel & { [name in Name]: JoinModel }> {
     return new JoinedTable<CombinedModel & { [name in Name]: JoinModel }>(
@@ -49,7 +49,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
   }
 
   leftJoin<JoinModel, Name extends string>(
-    table: Table<JoinModel, Name, any>,
+    table: Table<JoinModel, Name>,
     expression: AnyExpression,
   ): JoinedTable<CombinedModel & { [name in Name]: ValueNullable<JoinModel> }> {
     const rightPropertyMap = toMappedValue<Name, ObjectSchema<ValueNullable<JoinModel>>>(
@@ -73,7 +73,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
   }
 
   rightJoin<JoinModel, Name extends string>(
-    table: Table<JoinModel, Name, any>,
+    table: Table<JoinModel, Name>,
     expression: AnyExpression,
   ): JoinedTable<{ [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> } & { [key in Name]: JoinModel }> {
     const leftPropertyMap = mapValues(
@@ -101,7 +101,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
   }
 
   fullOuterJoin<JoinModel, Name extends string>(
-    table: Table<JoinModel, Name, any>,
+    table: Table<JoinModel, Name>,
     expression: AnyExpression,
   ): JoinedTable<
     { [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> }
@@ -140,7 +140,7 @@ export class JoinedTable<CombinedModel> implements Joinable<CombinedModel> {
 }
 
 export function makeJoinedTable<Model, Name extends string>(
-  table: Table<Model, Name, any>,
+  table: Table<Model, Name>,
 ): JoinedTable<{ [key in Name]: Model }> {
   return new JoinedTable<{ [key in Name]: Model }>(
     toMappedValue(table.meta.name, table.meta.schema),

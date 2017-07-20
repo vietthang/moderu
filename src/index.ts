@@ -8,27 +8,27 @@ import { DeleteQuery } from './query/delete'
 export type BaseCombinedOuput<Model> = { [key in keyof Model]: object }
 
 export function select<Model, Name extends string>(
-  table: Table<Model, Name, any>,
+  table: Table<Model, Name>,
 ): SelectQuery<{ [key in Name]: Model }, {}, { [key in Name]: Model }> {
   return new SelectQuery<{ [key in Name]: Model }, {}, { [key in Name]: Model }>(
     makeJoinedTable(table),
   )
 }
 
-export function insert<Model, Name extends string, ID extends keyof Model>(
-  table: Table<Model, Name, ID>,
-): InsertQuery<Model, Name, ID> {
-  return new InsertQuery<Model, Name, ID>(table)
+export function insert<Model, Name extends string>(
+  table: Table<Model, Name>,
+): InsertQuery<Model, Name> {
+  return new InsertQuery<Model, Name>(table)
 }
 
-export function update<Model, Name extends string, ID extends keyof Model>(
-  table: Table<Model, Name, ID>,
-): UpdateQuery<Model, Name, ID> {
-  return new UpdateQuery<Model, Name, ID>(table)
+export function update<Model, Name extends string>(
+  table: Table<Model, Name>,
+): UpdateQuery<Model, Name> {
+  return new UpdateQuery<Model, Name>(table)
 }
 
-export function del<Model, Name extends string, ID extends keyof Model>(
-  table: Table<Model, Name, ID>,
+export function del<Model, Name extends string>(
+  table: Table<Model, Name>,
 ): DeleteQuery<Model> {
   return new DeleteQuery<Model>(table)
 }

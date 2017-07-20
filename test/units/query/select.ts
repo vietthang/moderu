@@ -10,13 +10,11 @@ import { SelectQuery } from '../../../src/query/select'
 const Pet = defineTable({
   name: 'Pet',
   properties: petPropertyMap,
-  idAttribute: 'id',
 })
 
 const Plugin = defineTable({
   name: 'Plugin',
   properties: pluginPropertyMap,
-  idAttribute: 'id',
   parse: (raw) => {
     if (raw.extra) {
       raw = {
@@ -34,7 +32,6 @@ const PetSelectable = makeJoinedTable(Pet)
 const User = defineTable({
   name: 'User',
   properties: userPropertyMap,
-  idAttribute: 'id',
 })
 
 const knex = Knex({

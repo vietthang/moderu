@@ -101,11 +101,12 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
       columns: [],
       columnsWithin: convertJoinedTableToColumnsWithin(dataSet),
       allColumns: true,
+      transfomers: [],
     })
   }
 
   join<JoinModel, Name extends string>(
-    table: Table<JoinModel, Name, any>,
+    table: Table<JoinModel, Name>,
     expression: AnyExpression,
   ): SelectQuery<CombinedModel & { [key in Name]: JoinModel }, Model, Default> {
     return this.extend({
@@ -114,7 +115,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   }
 
   leftJoin<JoinModel, Name extends string>(
-    table: Table<JoinModel, Name, any>,
+    table: Table<JoinModel, Name>,
     expression: AnyExpression,
   ): SelectQuery<CombinedModel & { [key in Name]: ValueNullable<JoinModel> }, Model, Default> {
     return this.extend({
@@ -161,7 +162,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   }
 
   columnsWithin<Key extends keyof CombinedModel>(
-    table: Table<CombinedModel[Key], Key, any>,
+    table: Table<CombinedModel[Key], Key>,
   ): SelectQuery<
     CombinedModel,
     Model & { [key in Key]: { [innerKey in keyof CombinedModel[Key]]: CombinedModel[Key][innerKey] } },
@@ -169,7 +170,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   >
 
   columnsWithin<Key extends keyof CombinedModel, InnerKey extends keyof CombinedModel[Key]>(
-    table: Table<CombinedModel[Key], Key, any>,
+    table: Table<CombinedModel[Key], Key>,
     ...columns: Selector<CombinedModel[Key], InnerKey, Key>[],
   ): SelectQuery<
     CombinedModel,
@@ -178,7 +179,7 @@ export class SelectQuery<CombinedModel, Model, Default extends CombinedModel | {
   >
 
   columnsWithin<Key extends keyof CombinedModel, InnerKey extends keyof CombinedModel[Key]>(
-    table: Table<CombinedModel[Key], Key, any>,
+    table: Table<CombinedModel[Key], Key>,
     ...columns: Selector<CombinedModel[Key], InnerKey, Key>[],
   ): SelectQuery<
     CombinedModel,

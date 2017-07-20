@@ -10,7 +10,7 @@ import { Expression } from '../../../src/expression'
 import { Table, defineTable } from '../../../src/table'
 
 interface MockProps {
-  table: Table<Pet, any, any>
+  table: Table<Pet, any>
   model?: ModifiableModel<Pet>
   inputValidateDelegate: Validator<Partial<Pet>>
 }
@@ -18,7 +18,6 @@ interface MockProps {
 const petTable = defineTable({
   name: 'Pet',
   properties: petPropertyMap,
-  idAttribute: 'id',
 })
 
 class MockClass extends ModifiableQuery<Pet, MockProps, 'Pet'> {

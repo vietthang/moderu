@@ -11,7 +11,7 @@ export type Selector<Model, Key extends keyof Model, Name extends string> = {
   },
 } & ColumnMap<Model, Key, Name>
 
-export interface TableCore<Model, Name extends string, ID extends keyof Model> extends DataSetCore<Model, Name> {
+export interface TableCore<Model, Name extends string> extends DataSetCore<Model, Name> {
 
   readonly meta: {
 
@@ -21,42 +21,40 @@ export interface TableCore<Model, Name extends string, ID extends keyof Model> e
 
     readonly tableName: string,
 
-    readonly idAttribute: ID,
-
     readonly format?: (model: Partial<Model>) => any,
 
     readonly parse?: (raw: any) => Partial<Model>,
 
   },
 
-  as<Alias extends string>(alias: Alias): Table<Model, Alias, ID>
+  as<Alias extends string>(alias: Alias): Table<Model, Alias>
 
 }
 
-export type Table<Model, Name extends string, ID extends keyof Model>
+export type Table<Model, Name extends string>
   = Joinable<{ [key in Name]: Model }>
-  & TableCore<Model, Name, ID>
+  & TableCore<Model, Name>
   & DataSet<Model, Name>
 
 export interface Joinable<CombinedModel> {
 
   innerJoin<Model, Name extends string>(
-    table: Table<Model, Name, any>,
+    table: Table<Model, Name>,
     expression: AnyExpression,
   ): JoinedTable<CombinedModel & { [name in Name]: Model }>
 
   leftJoin<Model, Name extends string>(
-    table: Table<Model, Name, any>,
+    table: Table<Model, Name>,
     expression: AnyExpression,
   ): JoinedTable<CombinedModel & { [name in Name]: ValueNullable<Model> }>
 
   rightJoin<Model, Name extends string>(
-    table: Table<Model, Name, any>,
+    table: Table<Model, Name>,
     expression: AnyExpression,
   ): JoinedTable<{ [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> } & { [key in Name]: Model }>
 
   fullOuterJoin<Model, Name extends string>(
-    table: Table<Model, Name, any>,
+    table: Table<Model, Name>,
     expression: AnyExpression,
   ): JoinedTable<
     { [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> }
@@ -65,13 +63,11 @@ export interface Joinable<CombinedModel> {
 
 }
 
-export interface TableDefinition<Model, Name extends string, ID extends keyof Model> {
+export interface TableDefinition<Model, Name extends string> {
 
   name: Name
 
   properties: PropertyMap<Model>
-
-  idAttribute: ID
 
   format?: (model: any) => any
 
@@ -79,10 +75,10 @@ export interface TableDefinition<Model, Name extends string, ID extends keyof Mo
 
 }
 
-function defineTableWithAlias<Model, Name extends string, ID extends keyof Model>(
-  { name, properties, idAttribute, format, parse }: TableDefinition<Model, Name, ID>,
+function defineTableWithAlias<Model, Name extends string>(
+  { name, properties, format, parse }: TableDefinition<Model, Name>,
   tableName: string,
-): Table<Model, Name, ID> {
+): Table<Model, Name> {
   type CombinedModel = { [key in Name]: Model }
 
   const ret = makeDataSet(name, properties, {})
@@ -96,42 +92,41 @@ function defineTableWithAlias<Model, Name extends string, ID extends keyof Model
         ret.meta,
         {
           tableName,
-          idAttribute,
           format,
           parse,
         },
       ),
 
-      as<Alias extends string>(alias: Alias): Table<Model, Alias, ID> {
-        return defineTableWithAlias<Model, Alias, ID>(
-          { properties, idAttribute, name: alias },
+      as<Alias extends string>(alias: Alias): Table<Model, Alias> {
+        return defineTableWithAlias<Model, Alias>(
+          { properties, name: alias },
           tableName,
         )
       },
 
       innerJoin<JoinModel, JoinModelName extends string>(
-        joinTable: Table<JoinModel, JoinModelName, any>,
+        joinTable: Table<JoinModel, JoinModelName>,
         expression: AnyExpression,
       ): JoinedTable<CombinedModel & { [name in JoinModelName]: JoinModel }> {
         return makeJoinedTable(table).innerJoin(joinTable, expression)
       },
 
       leftJoin<JoinModel, JoinModelName extends string>(
-        joinTable: Table<JoinModel, JoinModelName, any>,
+        joinTable: Table<JoinModel, JoinModelName>,
         expression: AnyExpression,
       ): JoinedTable<CombinedModel & { [name in JoinModelName]: ValueNullable<JoinModel> }> {
         return makeJoinedTable(table).leftJoin(joinTable, expression)
       },
 
       rightJoin<JoinModel, Name extends string>(
-        joinTable: Table<JoinModel, Name, any>,
+        joinTable: Table<JoinModel, Name>,
         expression: AnyExpression,
       ): JoinedTable<{ [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> } & { [key in Name]: JoinModel }> {
         return makeJoinedTable(table).rightJoin(joinTable, expression)
       },
 
       fullOuterJoin<JoinModel, Name extends string>(
-        joinTable: Table<JoinModel, Name, any>,
+        joinTable: Table<JoinModel, Name>,
         expression: AnyExpression,
       ): JoinedTable<
         { [key in keyof CombinedModel]: ValueNullable<CombinedModel[key]> }
@@ -146,8 +141,8 @@ function defineTableWithAlias<Model, Name extends string, ID extends keyof Model
   return table
 }
 
-export function defineTable<Model, Name extends string, ID extends keyof Model>(
-  definition: TableDefinition<Model, Name, ID>,
-): Table<Model, Name, ID> {
-  return defineTableWithAlias<Model, Name, ID>(definition, definition.name)
+export function defineTable<Model, Name extends string>(
+  definition: TableDefinition<Model, Name>,
+): Table<Model, Name> {
+  return defineTableWithAlias<Model, Name>(definition, definition.name)
 }

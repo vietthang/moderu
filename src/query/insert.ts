@@ -1,5 +1,5 @@
 import { QueryBuilder, QueryInterface } from 'knex'
-import { object, compile } from 'sukima'
+import { object, compile, any } from 'sukima'
 
 import { mapValues } from '../utils'
 import { Column } from '../column'
@@ -10,16 +10,16 @@ import { ModifiableQuery, ModifiableQueryProps, ModifiableModel } from './modifi
 import { applyMixins } from '../utils/applyMixins'
 import { Table } from '../table'
 
-export type InsertQueryProps<Model, ID extends keyof Model>
-  = QueryProps<Model[ID] | null>
+export type InsertQueryProps<Model>
+  = QueryProps<any>
   & ModifiableQueryProps<Model>
   & {
-    readonly table: Table<Model, string, ID>,
+    readonly table: Table<Model, string>,
   }
 
-export class InsertQuery<Model, Name extends string, ID extends keyof Model>
-  extends Query<Model[ID] | null, InsertQueryProps<Model, ID>>
-  implements ModifiableQuery<Model, InsertQueryProps<Model, ID>, Name> {
+export class InsertQuery<Model, Name extends string>
+  extends Query<any, InsertQueryProps<Model>>
+  implements ModifiableQuery<Model, InsertQueryProps<Model>, Name> {
 
   readonly set: <K extends keyof Model>(column: K | Column<Model, K, Name>, value: Model[K]) => this
 
@@ -33,9 +33,9 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
   readonly setAttributesUnsafe: (model: ModifiableModel<Model>) => this
 
   /** @internal */
-  constructor(table: Table<Model, Name, ID>) {
+  constructor(table: Table<Model, Name>) {
     super({
-      schema: table.meta.schema.getPropertyMap()[table.meta.idAttribute].nullable(),
+      schema: any(),
       inputValidateDelegate: compile(
         object(
           mapValues(
@@ -50,6 +50,7 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
         },
       ),
       table,
+      transfomers: [],
     })
   }
 
@@ -77,7 +78,7 @@ export class InsertQuery<Model, Name extends string, ID extends keyof Model>
       model,
     )
 
-    return query.table(table.meta.tableName).insert(rawModel).returning(table.meta.idAttribute)
+    return query.table(table.meta.tableName).insert(rawModel)
   }
 
 }
