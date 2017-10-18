@@ -113,6 +113,20 @@ describe('Test Expression construction', () => {
     assert.deepEqual(bindings, ['status', 0, 1, 2])
   })
 
+  it('Should construct expression with in empty list correctly', () => {
+    const expression = new Expression('??', ['status'], integer()).in([])
+    const { sql, bindings } = makeKnexRaw(knex, expression.sql, expression.bindings, true) as any
+    assert.equal(sql, '0')
+    assert.deepEqual(bindings, [])
+  })
+
+  it('Should construct expression with not in empty list correctly', () => {
+    const expression = new Expression('??', ['status'], integer()).notIn([])
+    const { sql, bindings } = makeKnexRaw(knex, expression.sql, expression.bindings, true) as any
+    assert.equal(sql, '1')
+    assert.deepEqual(bindings, [])
+  })
+
   it('Should construct expression with isNull correctly', () => {
     const expression = new Expression('??', ['optional'], integer()).isNull()
     const { sql, bindings } = makeKnexRaw(knex, expression.sql, expression.bindings, true) as any

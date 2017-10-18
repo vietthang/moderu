@@ -111,12 +111,18 @@ export class Expression<OutputType> {
   }
 
   in(values: Value<OutputType>[]) {
+    if (values.length === 0) {
+      return new Expression<boolean>('0', [], conditionSchema)
+    }
     const expression = `${this.sql} IN (${values.map(getExpression).join(',')})`
     const bindings = this.bindings.concat(flatten(values.map(getBindings)))
     return new Expression<boolean>(expression, bindings, conditionSchema)
   }
 
   notIn(values: Value<OutputType>[]) {
+    if (values.length === 0) {
+      return new Expression<boolean>('1', [], conditionSchema)
+    }
     const expression = `${this.sql} NOT IN (${values.map(getExpression).join(',')})`
     const bindings = this.bindings.concat(flatten(values.map(getBindings)))
     return new Expression<boolean>(expression, bindings, conditionSchema)
