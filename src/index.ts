@@ -47,3 +47,5 @@ export function exp<OT>(
 export { defineTable } from './table'
 
 export { Expression } from './expression'
+
+export { Table } from './table'
