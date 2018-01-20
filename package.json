@@ -5,13 +5,12 @@
   "main": "build/src/index.js",
   "scripts": {
     "compile": "tsc",
-    "bundle": "dts-bundle --name moderu --main build/src/index.d.ts",
     "watch": "tsc --watch",
     "unit": "NODE_ENV=test mocha --recursive --compilers ts:ts-node/register --bail test",
     "unit:prebuilt": "NODE_ENV=test mocha --recursive --bail build/test",
     "cover": "NODE_ENV=test nyc npm run unit",
     "cover:check": "nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "build": "npm run compile && npm run bundle",
+    "build": "npm run compile",
     "clean": "rm -rf build && rm -rf coverage && rm -rf .nyc_output",
     "prepublish": "npm run clean && npm run build && npm test",
     "lint": "tslint --project tsconfig.json",
@@ -66,5 +65,5 @@
     ],
     "all": true
   },
-  "typings": "build/src/moderu.d.ts"
+  "typings": "build/src/index.d.ts"
 }
