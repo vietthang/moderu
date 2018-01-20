@@ -34,3 +34,5 @@ export function del<Model, Name extends string>(
 }
 
 export { defineTable } from './table'
+
+export { Expression } from './expression'
