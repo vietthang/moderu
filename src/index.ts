@@ -6,7 +6,7 @@ import { SelectQuery } from './query/select'
 import { InsertQuery } from './query/insert'
 import { UpdateQuery } from './query/update'
 import { DeleteQuery } from './query/delete'
-import { Expression } from './Expression'
+import { Expression } from './expression'
 
 export type BaseCombinedOuput<Model> = { [key in keyof Model]: object }
 
